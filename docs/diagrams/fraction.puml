@@ -1,0 +1,19 @@
+@startuml fraction
+hide empty description
+
+state "S0" as S0
+state "S1 (digit loop)" as S1
+state "Accept (.digit*nonzero)" as Accept1
+state "Accept (.0)" as Accept2
+
+[*] --> S0 : .
+S0 --> S1 : λ
+S0 --> Accept2 : 0
+
+S1 --> S1 : 0-9
+S1 --> Accept1 : 1-9
+
+Accept1 --> [*]
+Accept2 --> [*]
+
+@enduml
