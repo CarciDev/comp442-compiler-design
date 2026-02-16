@@ -1,0 +1,7 @@
+Syntax error at line 14: expected 'semi', found 'class'
+Syntax error at line 24: expected 'semi', found 'POLYNOMIAL'
+Syntax error at line 29: expected 'semi', found 'LINEAR'
+Syntax error at line 38: expected 'semi', found 'QUADRATIC'
+Syntax error at line 48: expected 'semi', found 'LINEAR'
+Syntax error at line 57: expected 'semi', found 'QUADRATIC'
+Syntax error at line 69: expected 'semi', found 'main'

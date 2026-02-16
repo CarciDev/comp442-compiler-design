@@ -1,0 +1,16 @@
+Syntax error at line 32: expected 'dot', found ';'
+Syntax error at line 32: expected 'id', found ';'
+Syntax error at line 32: unexpected ';' while parsing VARIDNEST2
+Syntax error at line 46: unexpected ';' while parsing REPTFUNCBODY2
+Syntax error at line 65: expected 'dot', found ';'
+Syntax error at line 65: expected 'id', found ';'
+Syntax error at line 65: unexpected ';' while parsing VARIDNEST2
+Syntax error at line 66: expected 'dot', found ';'
+Syntax error at line 66: expected 'id', found ';'
+Syntax error at line 66: unexpected ';' while parsing VARIDNEST2
+Syntax error at line 67: expected 'dot', found ';'
+Syntax error at line 67: expected 'id', found ';'
+Syntax error at line 67: unexpected ';' while parsing VARIDNEST2
+Syntax error at line 68: expected 'dot', found ';'
+Syntax error at line 68: expected 'id', found ';'
+Syntax error at line 68: unexpected ';' while parsing VARIDNEST2

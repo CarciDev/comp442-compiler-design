@@ -1,0 +1,73 @@
+// Test: multiple inheritance and member access chains
+class Node {
+	public getValue() : integer;
+	public setValue(integer v) : void;
+	private integer value;
+};
+
+class LinkedList {
+	public insert(integer v) : void;
+	public search(integer v) : integer;
+	public getSize() : integer;
+	private Node head;
+	private integer size;
+};
+
+class SortedList inherits LinkedList, Node {
+	public insertSorted(integer v) : void;
+};
+
+Node::getValue() : integer
+  do
+    return (value);
+  end;
+
+Node::setValue(integer v) : void
+  do
+    value = v;
+  end;
+
+LinkedList::insert(integer v) : void
+  do
+    head.setValue(v);
+    size = size + 1;
+  end;
+
+LinkedList::search(integer v) : integer
+  local
+    integer found;
+  do
+    found = 0;
+    if (head.getValue() == v)
+      then
+        found = 1;
+      else
+        ;
+    ;
+    return (found);
+  end;
+
+LinkedList::getSize() : integer
+  do
+    return (size);
+  end;
+
+SortedList::insertSorted(integer v) : void
+  do
+    insert(v);
+  end;
+
+main
+  local
+    LinkedList list;
+    integer found;
+  do
+    list.insert(42);
+    list.insert(17);
+    list.insert(99);
+    write(list.getSize());
+    found = list.search(17);
+    write(found);
+    found = list.search(55);
+    write(found);
+  end

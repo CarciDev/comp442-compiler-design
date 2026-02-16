@@ -49,6 +49,8 @@ public class ParserDriver {
 
     /**
      * Process a single source file through the lexer and parser.
+     * Output files are placed in an "output" subfolder relative to the source file,
+     * named as <basename>.outderivation and <basename>.outsyntaxerrors.
      */
     public static void processFile(String filename) {
         System.out.println("Processing: " + filename);
@@ -57,8 +59,22 @@ public class ParserDriver {
             System.err.println("Warning: File does not have .src extension: " + filename);
         }
 
-        String derivationFile = filename + ".outderivation";
-        String errorsFile = filename + ".outsyntaxerrors";
+        File srcFile = new File(filename);
+        File parentDir = srcFile.getParentFile();
+        File outputDir = (parentDir != null) ? new File(parentDir, "output") : new File("output");
+
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        // Strip .src extension to get base name
+        String baseName = srcFile.getName();
+        if (baseName.endsWith(".src")) {
+            baseName = baseName.substring(0, baseName.length() - 4);
+        }
+
+        String derivationFile = new File(outputDir, baseName + ".outderivation").getPath();
+        String errorsFile = new File(outputDir, baseName + ".outsyntaxerrors").getPath();
 
         try (
                 BufferedReader reader = new BufferedReader(new FileReader(filename));

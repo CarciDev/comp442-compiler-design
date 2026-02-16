@@ -1,0 +1,52 @@
+// Test: array declarations, multi-dimensional arrays, and indexing
+sumArray(integer arr[], integer size) : integer
+  local
+    integer i;
+    integer total;
+  do
+    i = 0;
+    total = 0;
+    while (i < size)
+      do
+        total = total + arr[i];
+        i = i + 1;
+      end;
+    return (total);
+  end;
+
+fillMatrix(integer mat[][5], integer rows, integer cols) : void
+  local
+    integer i;
+    integer j;
+  do
+    i = 0;
+    while (i < rows)
+      do
+        j = 0;
+        while (j < cols)
+          do
+            mat[i][j] = i * cols + j;
+            j = j + 1;
+          end;
+        i = i + 1;
+      end;
+  end;
+
+main
+  local
+    integer numbers[10];
+    integer matrix[3][5];
+    integer i;
+    integer result;
+  do
+    i = 0;
+    while (i < 10)
+      do
+        numbers[i] = i * i;
+        i = i + 1;
+      end;
+    result = sumArray(numbers, 10);
+    write(result);
+    fillMatrix(matrix, 3, 5);
+    write(matrix[2][4]);
+  end

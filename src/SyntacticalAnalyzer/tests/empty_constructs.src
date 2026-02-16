@@ -1,0 +1,21 @@
+// Test: minimal and empty constructs
+doNothing() : void
+  do
+  end;
+
+identity(integer x) : integer
+  do
+    return (x);
+  end;
+
+noLocals() : void
+  do
+    write(42);
+  end;
+
+main
+  do
+    doNothing();
+    write(identity(7));
+    noLocals();
+  end

@@ -1,0 +1,66 @@
+// Test: complex arithmetic and relational expressions
+abs(integer x) : integer
+  local
+    integer result;
+  do
+    if (x < 0)
+      then
+        result = 0 - x;
+      else
+        result = x;
+    ;
+    return (result);
+  end;
+
+power(integer base, integer exp) : integer
+  local
+    integer result;
+    integer i;
+  do
+    result = 1;
+    i = 0;
+    while (i < exp)
+      do
+        result = result * base;
+        i = i + 1;
+      end;
+    return (result);
+  end;
+
+main
+  local
+    integer a;
+    integer b;
+    integer c;
+    float x;
+    float y;
+  do
+    // arithmetic with precedence
+    a = 2 + 3 * 4;
+    b = (2 + 3) * 4;
+    write(a);
+    write(b);
+
+    // nested function calls in expressions
+    c = abs(power(2, 3) - power(3, 2));
+    write(c);
+
+    // chained comparisons via and/or
+    a = 5;
+    b = 10;
+    if (a < b and b < 20 or a == 5)
+      then
+        write(1);
+      else
+        write(0);
+    ;
+
+    // float expressions with sign
+    x = -3.14;
+    y = +2.5e1;
+    write(x + y);
+
+    // deeply nested parentheses
+    c = ((((a + b) * 2) - 3) + 1);
+    write(c);
+  end

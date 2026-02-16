@@ -1,0 +1,14 @@
+class Foo {
+	public bar() : void;
+};
+
+Foo::bar() : void
+  do
+  end;
+
+main
+  local
+    Foo x;
+  do
+    x.bar();
+  end

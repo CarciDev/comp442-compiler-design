@@ -39,7 +39,7 @@ public class ParsingTable {
             /*  29 */ {"FUNCDECL2", "void semi"},
             /*  30 */ {"FUNCDEF", "FUNCHEAD FUNCBODY semi"},
             /*  31 */ {"FUNCHEAD", "id FUNCHEAD1"},
-            /*  32 */ {"FUNCHEAD1", "sr id lpar FPARAMS rpar colon FUNCHEAD2"},
+            /*  32 */ {"FUNCHEAD1", "coloncolon id lpar FPARAMS rpar colon FUNCHEAD2"},
             /*  33 */ {"FUNCHEAD1", "lpar FPARAMS rpar colon FUNCHEAD2"},
             /*  34 */ {"FUNCHEAD2", "TYPE"},
             /*  35 */ {"FUNCHEAD2", "void"},
@@ -193,6 +193,7 @@ public class ParsingTable {
             put("leq", 13);
             put("lt", 13);
             put("neq", 13);
+            put("comma", 14);
             put("rpar", 14);
             put("semi", 14);
         }});
@@ -207,6 +208,7 @@ public class ParsingTable {
         }});
         table.put("FACTOR2", new HashMap<>() {{
             put("and", 22);
+            put("comma", 22);
             put("div", 22);
             put("dot", 22);
             put("eq", 22);
@@ -334,6 +336,7 @@ public class ParsingTable {
             put("neq", 55);
         }});
         table.put("REPTAPARAMS1", new HashMap<>() {{
+            put("comma", 60);
             put("rpar", 61);
         }});
         table.put("REPTCLASSDECL4", new HashMap<>() {{
@@ -343,12 +346,15 @@ public class ParsingTable {
         }});
         table.put("REPTFPARAMS2", new HashMap<>() {{
             put("lsqbr", 64);
+            put("comma", 65);
             put("rpar", 65);
         }});
         table.put("REPTFPARAMS3", new HashMap<>() {{
+            put("comma", 66);
             put("rpar", 67);
         }});
         table.put("REPTFPARAMSTAIL3", new HashMap<>() {{
+            put("comma", 69);
             put("lsqbr", 68);
             put("rpar", 69);
         }});
@@ -363,6 +369,7 @@ public class ParsingTable {
         }});
         table.put("REPTIDNEST1", new HashMap<>() {{
             put("and", 73);
+            put("comma", 73);
             put("div", 73);
             put("dot", 73);
             put("eq", 73);
@@ -420,6 +427,7 @@ public class ParsingTable {
         }});
         table.put("REPTVARIABLEORFUNCTIONCALL", new HashMap<>() {{
             put("and", 89);
+            put("comma", 89);
             put("div", 89);
             put("dot", 88);
             put("eq", 89);
@@ -437,6 +445,7 @@ public class ParsingTable {
             put("semi", 89);
         }});
         table.put("RIGHTRECARITHEXPR", new HashMap<>() {{
+            put("comma", 90);
             put("eq", 90);
             put("geq", 90);
             put("gt", 90);
@@ -452,6 +461,7 @@ public class ParsingTable {
         }});
         table.put("RIGHTRECTERM", new HashMap<>() {{
             put("and", 93);
+            put("comma", 92);
             put("div", 93);
             put("eq", 92);
             put("geq", 92);

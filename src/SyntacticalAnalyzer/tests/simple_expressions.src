@@ -1,0 +1,28 @@
+// Test: basic expressions, variables, and I/O
+compute(integer x, integer y) : integer
+  local
+    integer result;
+  do
+    result = x + y * 2 - 1;
+    return (result);
+  end;
+
+main
+  local
+    integer a;
+    integer b;
+    integer c;
+    float d;
+  do
+    a = 5;
+    b = 10;
+    c = compute(a, b);
+    write(c);
+    d = 3.5 + 2.0 * 1.5e2;
+    write(d);
+    read(a);
+    c = a * b + (a - b) / 2;
+    write(c);
+    c = not a;
+    write(c);
+  end

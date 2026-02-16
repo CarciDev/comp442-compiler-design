@@ -1,0 +1,66 @@
+// Test: nested if-then-else and while loops
+max(integer a, integer b) : integer
+  local
+    integer result;
+  do
+    if (a > b)
+      then
+        result = a;
+      else
+        result = b;
+    ;
+    return (result);
+  end;
+
+clamp(integer val, integer lo, integer hi) : integer
+  local
+    integer result;
+  do
+    result = val;
+    if (val < lo)
+      then
+        result = lo;
+      else
+        if (val > hi)
+          then
+            result = hi;
+          else
+            ;
+        ;
+    ;
+    return (result);
+  end;
+
+main
+  local
+    integer i;
+    integer j;
+    integer sum;
+  do
+    i = 0;
+    j = 0;
+    sum = 0;
+    while (i < 5)
+      do
+        j = 0;
+        while (j < 5)
+          do
+            if (i == j)
+              then
+                sum = sum + 1;
+              else
+                if (i > j)
+                  then
+                    sum = sum + 2;
+                  else
+                    sum = sum + 3;
+                ;
+            ;
+            j = j + 1;
+          end;
+        i = i + 1;
+      end;
+    write(sum);
+    write(max(10, 20));
+    write(clamp(50, 0, 100));
+  end

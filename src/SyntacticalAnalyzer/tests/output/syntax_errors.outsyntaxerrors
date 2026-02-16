@@ -1,0 +1,13 @@
+Syntax error at line 6: expected 'semi', found '}'
+Syntax error at line 11: unexpected 'do' while parsing REPTVARDECL2
+Syntax error at line 13: unexpected 'return' while parsing REPTOPTFUNCBODY01
+Syntax error at line 13: expected 'id', found ')'
+Syntax error at line 13: unexpected ')' while parsing REPTVARDECL2
+Syntax error at line 14: unexpected 'end' while parsing REPTOPTFUNCBODY01
+Syntax error at line 20: unexpected ';' while parsing EXPR
+Syntax error at line 24: expected 'semi', found 'else'
+Syntax error at line 27: unexpected ')' while parsing ARITHEXPR
+Syntax error at line 32: expected 'semi', found '$'
+Syntax error at line 32: unexpected '$' while parsing REPTPROG1
+Syntax error at line 32: expected 'main', found '$'
+Syntax error at line 32: unexpected '$' while parsing FUNCBODY
