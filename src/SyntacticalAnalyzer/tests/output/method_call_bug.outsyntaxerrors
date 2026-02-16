@@ -1,9 +1,0 @@
-Syntax error at line 13: expected 'dot', found ';'
-Syntax error at line 13: expected 'id', found ';'
-Syntax error at line 13: unexpected ';' while parsing VARIDNEST2
-Syntax error at line 15: unexpected '$' while parsing REPTVARIABLE
-Syntax error at line 15: expected 'assign', found '$'
-Syntax error at line 15: unexpected '$' while parsing EXPR
-Syntax error at line 15: expected 'semi', found '$'
-Syntax error at line 15: unexpected '$' while parsing REPTFUNCBODY2
-Syntax error at line 15: expected 'end', found '$'

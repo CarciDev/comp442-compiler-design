@@ -43,7 +43,6 @@ LinkedList::search(integer v) : integer
         found = 1;
       else
         ;
-    ;
     return (found);
   end;
 

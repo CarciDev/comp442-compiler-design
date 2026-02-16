@@ -113,9 +113,9 @@ public class ParsingTable {
             /* 103 */ {"STATEMENT", "read lpar VARIABLE rpar semi"},
             /* 104 */ {"STATEMENT", "write lpar EXPR rpar semi"},
             /* 105 */ {"STATEMENT", "return lpar EXPR rpar semi"},
-            /* 106 */ {"STATEMENT2", "REPTIDNEST1 REPTVARIABLE assign EXPR semi"},
+            /* 106 */ {"STATEMENT2", "REPTIDNEST1 STMTIDNEST"},
             /* 107 */ {"STATEMENT2", "lpar APARAMS rpar STATEMENT3"},
-            /* 108 */ {"STATEMENT3", "VARIDNEST assign EXPR semi"},
+            /* 108 */ {"STATEMENT3", "dot id STMTIDNEST2"},
             /* 109 */ {"STATEMENT3", "semi"},
             /* 110 */ {"TERM", "FACTOR RIGHTRECTERM"},
             /* 111 */ {"TYPE", "integer"},
@@ -130,6 +130,12 @@ public class ParsingTable {
             /* 120 */ {"VARIDNEST2", "REPTIDNEST1"},
             /* 121 */ {"VISIBILITY", "public"},
             /* 122 */ {"VISIBILITY", "private"},
+            /* 123 */ {"STMTIDNEST", "dot id STMTIDNEST2"},
+            /* 124 */ {"STMTIDNEST", "assign EXPR semi"},
+            /* 125 */ {"STMTIDNEST2", "lpar APARAMS rpar STMTIDNEST3"},
+            /* 126 */ {"STMTIDNEST2", "REPTIDNEST1 STMTIDNEST"},
+            /* 127 */ {"STMTIDNEST3", "dot id STMTIDNEST2"},
+            /* 128 */ {"STMTIDNEST3", "semi"},
     };
 
     // Parsing table: TT[nonTerminal][terminal] = rule index
@@ -515,6 +521,20 @@ public class ParsingTable {
             put("dot", 108);
             put("semi", 109);
         }});
+        table.put("STMTIDNEST", new HashMap<>() {{
+            put("dot", 123);
+            put("assign", 124);
+        }});
+        table.put("STMTIDNEST2", new HashMap<>() {{
+            put("lpar", 125);
+            put("lsqbr", 126);
+            put("dot", 126);
+            put("assign", 126);
+        }});
+        table.put("STMTIDNEST3", new HashMap<>() {{
+            put("dot", 127);
+            put("semi", 128);
+        }});
         table.put("TERM", new HashMap<>() {{
             put("floatnum", 110);
             put("id", 110);
@@ -624,6 +644,9 @@ public class ParsingTable {
         firstSets.put("STATEMENT", new HashSet<>(Arrays.asList("id", "if", "read", "return", "while", "write")));
         firstSets.put("STATEMENT2", new HashSet<>(Arrays.asList("dot", "assign", "lpar", "lsqbr")));
         firstSets.put("STATEMENT3", new HashSet<>(Arrays.asList("dot", "semi")));
+        firstSets.put("STMTIDNEST", new HashSet<>(Arrays.asList("dot", "assign")));
+        firstSets.put("STMTIDNEST2", new HashSet<>(Arrays.asList("lpar", "lsqbr", "dot", "assign")));
+        firstSets.put("STMTIDNEST3", new HashSet<>(Arrays.asList("dot", "semi")));
         firstSets.put("TERM", new HashSet<>(Arrays.asList("floatnum", "id", "intnum", "lpar", "minus", "not", "plus")));
         firstSets.put("TYPE", new HashSet<>(Arrays.asList("float", "id", "integer")));
         firstSets.put("VARDECL", new HashSet<>(Arrays.asList("float", "id", "integer")));
@@ -692,6 +715,9 @@ public class ParsingTable {
         followSets.put("STATEMENT", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
         followSets.put("STATEMENT2", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
         followSets.put("STATEMENT3", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
+        followSets.put("STMTIDNEST", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
+        followSets.put("STMTIDNEST2", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
+        followSets.put("STMTIDNEST3", new HashSet<>(Arrays.asList("else", "end", "id", "if", "read", "return", "semi", "while", "write")));
         followSets.put("TERM", new HashSet<>(Arrays.asList("eq", "geq", "gt", "leq", "lt", "minus", "neq", "or", "plus", "rpar", "rsqbr", "semi")));
         followSets.put("TYPE", new HashSet<>(Arrays.asList("do", "id", "local", "semi")));
         followSets.put("VARDECL", new HashSet<>(Arrays.asList("do", "float", "id", "integer")));

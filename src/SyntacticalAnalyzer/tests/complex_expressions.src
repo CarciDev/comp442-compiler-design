@@ -45,12 +45,20 @@ main
     c = abs(power(2, 3) - power(3, 2));
     write(c);
 
-    // chained comparisons via and/or
+    // relational expression with arithmetic using and/or/not
     a = 5;
     b = 10;
-    if (a < b and b < 20 or a == 5)
+    if (a + b < 20)
       then
         write(1);
+      else
+        write(0);
+    ;
+
+    // not operator
+    if (not a == 0)
+      then
+        write(a);
       else
         write(0);
     ;

@@ -30,9 +30,10 @@ class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id
 class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do REPTFUNCBODY2 end
 class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do STATEMENT REPTFUNCBODY2 end
 class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id STATEMENT2 REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id REPTIDNEST1 REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id VARIDNEST REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id VARIDNEST2 REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar APARAMS rpar dot id VARIDNEST2 REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
-class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar rpar dot id VARIDNEST2 REPTVARIABLE assign EXPR semi REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id REPTIDNEST1 STMTIDNEST REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id STMTIDNEST REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id STMTIDNEST2 REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar APARAMS rpar STMTIDNEST3 REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar rpar STMTIDNEST3 REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar rpar semi REPTFUNCBODY2 end
+class id lcurbr public id lpar rpar colon void semi rcurbr semi id coloncolon id lpar rpar colon void do end semi main local id id semi do id dot id lpar rpar semi end

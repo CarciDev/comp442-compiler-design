@@ -27,7 +27,6 @@ clamp(integer val, integer lo, integer hi) : integer
           else
             ;
         ;
-    ;
     return (result);
   end;
 

@@ -1,0 +1,5 @@
+Syntax error at line 29: expected 'semi', found 'LINEAR'
+Syntax error at line 38: expected 'semi', found 'QUADRATIC'
+Syntax error at line 48: expected 'semi', found 'LINEAR'
+Syntax error at line 57: expected 'semi', found 'QUADRATIC'
+Syntax error at line 69: expected 'semi', found 'main'
