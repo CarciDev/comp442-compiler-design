@@ -1,5 +1,7 @@
 package src.SyntacticalAnalyzer;
 
+import java.util.List;
+
 /**
  * STEP-BY-STEP TESTS FOR A3-01 AND A3-02
  * Run after implementing ASTNode.java
@@ -81,9 +83,9 @@ public class ASTNodeTest {
     /** Test: Create composite nodes (no value, will have children) */
     static void testCompositeNodeCreation() {
         try {
-            ASTNode varDecl = ASTNode.makeNode("VarDecl");
+            ASTNode varDecl = ASTNode.makeNode("VarDecl", 0);
             check("Composite - type", "VarDecl".equals(varDecl.getType()));
-            check("Composite - no value", varDecl.getValue() == null || varDecl.getValue().isEmpty());
+            check("Composite - no value", varDecl.getValue() == null);
             check("Composite - no children yet", varDecl.getChildren().isEmpty());
         } catch (Exception e) {
             check("Composite node creation threw exception: " + e.getMessage(), false);
@@ -93,7 +95,7 @@ public class ASTNodeTest {
     /** Test: Create epsilon sentinel node */
     static void testEpsilonNode() {
         try {
-            ASTNode eps = ASTNode.makeNode("Epsilon");
+            ASTNode eps = ASTNode.makeNode("Epsilon", 0);
             check("Epsilon - type", "Epsilon".equals(eps.getType()));
         } catch (Exception e) {
             check("Epsilon node creation threw exception: " + e.getMessage(), false);
@@ -108,12 +110,12 @@ public class ASTNodeTest {
     static void testAdoptChildren() {
         // Build:  VarDecl -> [Type, Id]
         try {
-            ASTNode parent = ASTNode.makeNode("VarDecl");
+            ASTNode parent = ASTNode.makeNode("VarDecl", 1);
             ASTNode child1 = ASTNode.makeNode("Type", "int", 1);
             ASTNode child2 = ASTNode.makeNode("Id", "x", 1);
 
-            ASTNode.adoptChildren(parent, child1);
-            ASTNode.adoptChildren(parent, child2);
+            parent.adoptChildren(child1);
+            parent.adoptChildren(child2);
 
             check("adoptChildren - has 2 children", parent.getChildren().size() == 2);
             check("adoptChildren - first child is Type",
@@ -131,11 +133,13 @@ public class ASTNodeTest {
         // uses a children list on the parent instead of sibling pointers,
         // you may adapt this test accordingly.
         try {
+            ASTNode parent = ASTNode.makeNode("VarDecl", 1);
             ASTNode node1 = ASTNode.makeNode("Id", "a", 1);
             ASTNode node2 = ASTNode.makeNode("Id", "b", 1);
-            ASTNode.makeSiblings(node1, node2);
-            // Verify they are linked (implementation-dependent check)
-            check("makeSiblings - nodes created without error", true);
+            parent.adoptChildren(node1); // node1 needs a parent first
+            node1.makeSiblings(node2);
+            check("makeSiblings - parent has 2 children", parent.getChildren().size() == 2);
+            check("makeSiblings - second child is b", "b".equals(parent.getChildren().get(1).getValue()));
         } catch (Exception e) {
             check("makeSiblings threw exception: " + e.getMessage(), false);
         }
@@ -148,7 +152,7 @@ public class ASTNodeTest {
         try {
             ASTNode left = ASTNode.makeNode("Id", "a", 1);
             ASTNode right = ASTNode.makeNode("Id", "b", 1);
-            ASTNode addOp = ASTNode.makeFamily("AddOp", left, right);
+            ASTNode addOp = ASTNode.makeFamily("AddOp", 1, List.of(left, right));
 
             check("makeFamily - type", "AddOp".equals(addOp.getType()));
             check("makeFamily - 2 children", addOp.getChildren().size() == 2);
@@ -175,7 +179,7 @@ public class ASTNodeTest {
             java.util.Deque<ASTNode> stack = new java.util.ArrayDeque<>();
 
             // Push Epsilon sentinel
-            stack.push(ASTNode.makeNode("Epsilon"));
+            stack.push(ASTNode.makeNode("Epsilon", 0));
             // Push dimensions (in parsing order)
             stack.push(ASTNode.makeNode("Dim", "5", 1));
             stack.push(ASTNode.makeNode("Dim", "3", 1));
@@ -215,8 +219,8 @@ public class ASTNodeTest {
             ASTNode idNode = ASTNode.makeNode("Id", "x", 1);
             ASTNode dim1 = ASTNode.makeNode("Dim", "5", 1);
             ASTNode dim2 = ASTNode.makeNode("Dim", "3", 1);
-            ASTNode dimList = ASTNode.makeFamily("DimList", dim1, dim2);
-            ASTNode varDecl = ASTNode.makeFamily("VarDecl", typeNode, idNode, dimList);
+            ASTNode dimList = ASTNode.makeFamily("DimList", 1, List.of(dim1, dim2));
+            ASTNode varDecl = ASTNode.makeFamily("VarDecl", 1, List.of(typeNode, idNode, dimList));
 
             check("VarDecl - type correct", "VarDecl".equals(varDecl.getType()));
             check("VarDecl - 3 children", varDecl.getChildren().size() == 3);
@@ -245,8 +249,8 @@ public class ASTNodeTest {
             ASTNode lhs = ASTNode.makeNode("Id", "a", 1);
             ASTNode left = ASTNode.makeNode("Id", "b", 1);
             ASTNode right = ASTNode.makeNode("Id", "c", 1);
-            ASTNode addOp = ASTNode.makeFamily("AddOp", left, right);
-            ASTNode assign = ASTNode.makeFamily("AssignStat", lhs, addOp);
+            ASTNode addOp = ASTNode.makeFamily("AddOp", 1, List.of(left, right));
+            ASTNode assign = ASTNode.makeFamily("AssignStat", 1, List.of(lhs, addOp));
 
             check("AssignStat - type", "AssignStat".equals(assign.getType()));
             check("AssignStat - 2 children", assign.getChildren().size() == 2);
@@ -270,10 +274,10 @@ public class ASTNodeTest {
      */
     static void testBuildProgStructure() {
         try {
-            ASTNode classList = ASTNode.makeFamily("ClassList");
-            ASTNode funcDefList = ASTNode.makeFamily("FuncDefList");
-            ASTNode programBlock = ASTNode.makeFamily("ProgramBlock");
-            ASTNode prog = ASTNode.makeFamily("Prog", classList, funcDefList, programBlock);
+            ASTNode classList = ASTNode.makeFamily("ClassList", 0, List.of());
+            ASTNode funcDefList = ASTNode.makeFamily("FuncDefList", 0, List.of());
+            ASTNode programBlock = ASTNode.makeFamily("ProgramBlock", 0, List.of());
+            ASTNode prog = ASTNode.makeFamily("Prog", 0, List.of(classList, funcDefList, programBlock));
 
             check("Prog - type", "Prog".equals(prog.getType()));
             check("Prog - 3 children", prog.getChildren().size() == 3);
