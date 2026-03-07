@@ -1,0 +1,31 @@
+// Test: intentional syntax errors for error recovery testing
+// Missing semicolons, mismatched brackets, invalid statements
+
+class Broken {
+	public foo() : void
+};
+
+broken_func(integer x) : integer
+  local
+    integer y
+  do
+    y = x +;
+    return (y);
+  end;
+
+main
+  local
+    integer a;
+  do
+    a = ;
+    if (a > 0)
+      then
+        write(a)
+      else
+        write(0);
+    ;
+    while (a < )
+      do
+        a = a + 1;
+      end;
+  end

@@ -1,0 +1,93 @@
+// Test: class declarations, inheritance, and method calls
+class Shape {
+	public area() : float;
+	public perimeter() : float;
+};
+
+class Circle inherits Shape {
+	private float radius;
+
+	public setRadius(float r) : void;
+	public area() : float;
+	public perimeter() : float;
+};
+
+class Rectangle inherits Shape {
+	private float width;
+	private float height;
+
+	public setDimensions(float w, float h) : void;
+	public area() : float;
+	public perimeter() : float;
+};
+
+Shape::area() : float
+  do
+    return (0.0);
+  end;
+
+Shape::perimeter() : float
+  do
+    return (0.0);
+  end;
+
+Circle::setRadius(float r) : void
+  do
+    radius = r;
+  end;
+
+Circle::area() : float
+  local
+    float result;
+  do
+    result = 3.14 * radius * radius;
+    return (result);
+  end;
+
+Circle::perimeter() : float
+  local
+    float result;
+  do
+    result = 2.0 * 3.14 * radius;
+    return (result);
+  end;
+
+Rectangle::setDimensions(float w, float h) : void
+  do
+    width = w;
+    height = h;
+  end;
+
+Rectangle::area() : float
+  local
+    float result;
+  do
+    result = width * height;
+    return (result);
+  end;
+
+Rectangle::perimeter() : float
+  local
+    float result;
+  do
+    result = 2.0 * (width + height);
+    return (result);
+  end;
+
+main
+  local
+    Circle c;
+    Rectangle r;
+    float a;
+  do
+    c.setRadius(5.0);
+    r.setDimensions(3.0, 4.0);
+    a = c.area();
+    write(a);
+    a = c.perimeter();
+    write(a);
+    a = r.area();
+    write(a);
+    a = r.perimeter();
+    write(a);
+  end

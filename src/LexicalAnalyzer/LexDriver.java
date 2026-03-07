@@ -44,7 +44,9 @@ public class LexDriver {
     }
 
     /**
-     * Process a single source file and generate output files
+     * Process a single source file and generate output files.
+     * Output files are placed in an "output" subfolder relative to the source file,
+     * named as <basename>.outlextokens, <basename>.outlextokensflaci, and <basename>.outlexerrors.
      */
     public static void processFile(String filename) {
         System.out.println("Processing: " + filename);
@@ -54,15 +56,23 @@ public class LexDriver {
             System.err.println("Warning: File does not have .src extension: " + filename);
         }
 
-        // Determine base name for output files
-        String baseName = filename;
-        if (filename.endsWith(".src")) {
-            baseName = filename.substring(0, filename.length() - 4);
+        File srcFile = new File(filename);
+        File parentDir = srcFile.getParentFile();
+        File outputDir = (parentDir != null) ? new File(parentDir, "output") : new File("output");
+
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
         }
 
-        String tokensFile = baseName + ".outlextokens";
-        String flaciFile = baseName + ".outlextokensflaci";
-        String errorsFile = baseName + ".outlexerrors";
+        // Strip .src extension to get base name
+        String baseName = srcFile.getName();
+        if (baseName.endsWith(".src")) {
+            baseName = baseName.substring(0, baseName.length() - 4);
+        }
+
+        String tokensFile = new File(outputDir, baseName + ".outlextokens").getPath();
+        String flaciFile = new File(outputDir, baseName + ".outlextokensflaci").getPath();
+        String errorsFile = new File(outputDir, baseName + ".outlexerrors").getPath();
 
         List<Token> tokens = new ArrayList<>();
         List<Token> errors = new ArrayList<>();

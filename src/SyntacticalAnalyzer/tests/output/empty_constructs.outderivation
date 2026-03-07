@@ -1,0 +1,89 @@
+PROG
+REPTPROG0 REPTPROG1 main FUNCBODY
+REPTPROG1 main FUNCBODY
+FUNCDEF REPTPROG1 main FUNCBODY
+FUNCHEAD FUNCBODY semi REPTPROG1 main FUNCBODY
+id FUNCHEAD1 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar FPARAMS rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void OPTFUNCBODY0 do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi FUNCDEF REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi FUNCHEAD FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id FUNCHEAD1 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar FPARAMS rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar TYPE id REPTFPARAMS2 REPTFPARAMS3 rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id REPTFPARAMS2 REPTFPARAMS3 rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id REPTFPARAMS3 rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon TYPE FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer OPTFUNCBODY0 do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do STATEMENT REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar EXPR rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar ARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar TERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar FACTOR RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id FACTOR2 REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id REPTIDNEST1 REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi FUNCDEF REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi FUNCHEAD FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id FUNCHEAD1 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar FPARAMS rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon FUNCHEAD2 FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void FUNCBODY semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void OPTFUNCBODY0 do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do STATEMENT REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar EXPR rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar ARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar TERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar FACTOR RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum EXPR2 rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi REPTFUNCBODY2 end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi REPTPROG1 main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main FUNCBODY
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main OPTFUNCBODY0 do REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do STATEMENT REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id STATEMENT2 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar APARAMS rpar STATEMENT3 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar STATEMENT3 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi STATEMENT REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar EXPR rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar ARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar TERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar FACTOR RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id FACTOR2 REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar APARAMS rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar EXPR REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar ARITHEXPR EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar TERM RIGHTRECARITHEXPR EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar FACTOR RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum RIGHTRECARITHEXPR EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum EXPR2 REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum REPTAPARAMS1 rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar REPTVARIABLEORFUNCTIONCALL RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar RIGHTRECTERM RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar RIGHTRECARITHEXPR EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar EXPR2 rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi STATEMENT REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi id STATEMENT2 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi id lpar APARAMS rpar STATEMENT3 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi id lpar rpar STATEMENT3 REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi id lpar rpar semi REPTFUNCBODY2 end
+id lpar rpar colon void do end semi id lpar integer id rpar colon integer do return lpar id rpar semi end semi id lpar rpar colon void do write lpar intnum rpar semi end semi main do id lpar rpar semi write lpar id lpar intnum rpar rpar semi id lpar rpar semi end
