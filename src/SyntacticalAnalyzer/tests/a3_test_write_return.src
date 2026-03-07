@@ -1,0 +1,21 @@
+// A3 TEST: Write (put) and return statements
+// Tests: PutStat -> expr, ReturnStat -> expr
+// Inspired by example2/3: put(a), put(a+6), return(retval)
+f(integer x) : integer
+  local
+    integer result;
+  do
+    result = x + 1;
+    write(result);
+    write(x + 5);
+    return(result);
+  end
+
+main
+  local
+    integer a;
+  do
+    a = 3;
+    write(a);
+    write(a + 6);
+  end

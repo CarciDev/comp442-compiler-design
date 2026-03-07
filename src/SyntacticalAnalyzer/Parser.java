@@ -29,6 +29,37 @@ public class Parser {
     // Parsing stack
     private final Deque<String> stack;
 
+    // =========================================================================
+    // TODO(A3-06): ADD A SEMANTIC STACK
+    // =========================================================================
+    //
+    // WHAT: Add a second stack (Deque<ASTNode>) called "semanticStack" that
+    //       operates alongside the existing parsing stack. This stack holds
+    //       partially-built AST nodes during parsing.
+    //
+    // WHY:  The parsing stack drives syntax analysis (terminals & non-terminals).
+    //       The semantic stack drives AST construction (ASTNode objects).
+    //       They work in tandem: when the parser matches a meaningful terminal
+    //       or processes a semantic action marker, it pushes/pops ASTNodes on
+    //       the semantic stack.
+    //       See: 7.SDTII.pdf slide 3 (architecture diagram with both stacks)
+    //            8.SDTAST.pdf slides 26-31 (stack-based AST generation)
+    //
+    // HOW IT CONNECTS:
+    //   - Semantic action markers in the grammar (A3-05) trigger operations
+    //     on this stack
+    //   - When parsing finishes, the semantic stack should contain exactly
+    //     ONE node: the root "Prog" node = your complete AST
+    //     See: 8.SDTAST.pdf slide 16
+    //
+    // ALSO ADD:
+    //   - A field to store the AST root after parsing (e.g., ASTNode astRoot)
+    //   - A getter method getAST() so the driver can retrieve it
+    //   - Store the most recently matched Token so semantic actions can access
+    //     its lexeme and line number (e.g., Token lastMatchedToken)
+    //
+    // =========================================================================
+
     // Derivation tracking - maintains the current sentential form
     private final List<String> sententialForm;
 
@@ -64,6 +95,44 @@ public class Parser {
 
         while (!stack.peek().equals("$")) {
             String top = stack.peek();
+
+            // =================================================================
+            // TODO(A3-07): ADD SEMANTIC ACTION DETECTION (THIRD BRANCH)
+            // =================================================================
+            //
+            // WHAT: Add a check BEFORE the terminal/non-terminal branches:
+            //       if the top of the parsing stack starts with "@", it's a
+            //       semantic action marker — pop it and execute the action.
+            //
+            // WHY:  This is the core mechanism of syntax-directed translation
+            //       in a table-driven parser. Semantic action symbols are
+            //       pushed onto the parsing stack alongside grammar symbols
+            //       (from the augmented rules in A3-05). When they reach the
+            //       top, they trigger AST construction on the semantic stack.
+            //       See: 7.SDTII.pdf slide 4 (the complete algorithm pseudocode)
+            //
+            // PSEUDOCODE (from 7.SDTII.pdf slide 4):
+            //   if top starts with "@":
+            //       stack.pop()
+            //       executeSemanticAction(top)  // see A3-08
+            //   else if isTerminal(top):
+            //       ... existing terminal matching code ...
+            //   else:
+            //       ... existing non-terminal expansion code ...
+            //
+            // IMPORTANT: This branch goes FIRST because "@" symbols are
+            //   neither terminals nor non-terminals. If you don't check for
+            //   them, isTerminal() would return true (since "@MAKE_VARDECL"
+            //   isn't in the parsing table), and the parser would try to
+            //   match it against the input token and fail.
+            //
+            // ALSO: When matching terminals below (the "Match - pop and
+            //   advance" section), save the matched token before advancing:
+            //     lastMatchedToken = lookahead;  // save for semantic actions
+            //   Semantic actions for leaf nodes (like @MAKE_ID) need to know
+            //   WHICH token was just matched to create the correct AST leaf.
+            //
+            // =================================================================
 
             if (isTerminal(top)) {
                 // Top is a terminal - try to match with lookahead
@@ -189,11 +258,148 @@ public class Parser {
         return token.toFlaciString();
     }
 
+    // =========================================================================
+    // TODO(A3-08): IMPLEMENT SEMANTIC ACTION HANDLER METHODS
+    // =========================================================================
+    //
+    // WHAT: Create a method executeSemanticAction(String action) that maps
+    //       each "@ACTION_NAME" to its corresponding AST-building logic.
+    //       Each handler pops nodes from the semantic stack, assembles them,
+    //       and pushes the result back.
+    //
+    // WHY:  Each semantic action corresponds to recognizing a "semantic
+    //       concept" — either atomic (leaf) or composite (subtree).
+    //       See: 8.SDTAST.pdf slides 15-16 (semantic concepts -> AST nodes)
+    //            8.5.ASTgeneration.pdf slides 4-5 (concrete createLeaf/
+    //            createSubtree examples with step-by-step stack traces)
+    //
+    // HOW IT CONNECTS:
+    //   Called from the "@" branch you added in A3-07. Uses the semantic
+    //   stack from A3-06 and the ASTNode methods from A3-01/02.
+    //
+    // IMPLEMENTATION PATTERN:
+    //   void executeSemanticAction(String action) {
+    //       switch (action) {
+    //           case "@MAKE_ID":
+    //               // Leaf: push an Id node using the last matched token
+    //               semanticStack.push(ASTNode.makeNode("id",
+    //                   lastMatchedToken.getLexeme(),
+    //                   lastMatchedToken.getLine()));
+    //               break;
+    //
+    //           case "@MAKE_INTNUM":
+    //               semanticStack.push(ASTNode.makeNode("intNum",
+    //                   lastMatchedToken.getLexeme(),
+    //                   lastMatchedToken.getLine()));
+    //               break;
+    //
+    //           case "@MAKE_TYPE":
+    //               semanticStack.push(ASTNode.makeNode("type",
+    //                   lastMatchedToken.getLexeme(),
+    //                   lastMatchedToken.getLine()));
+    //               break;
+    //
+    //           case "@PUSH_EPSILON":
+    //               // Push sentinel marker for variable-length lists
+    //               semanticStack.push(ASTNode.makeNode("epsilon"));
+    //               break;
+    //
+    //           case "@MAKE_DIMLIST":
+    //               // Pop until epsilon, collect into a DimList
+    //               List<ASTNode> dims = popUntilEpsilon();
+    //               ASTNode dimList = ASTNode.makeFamily("dimList",
+    //                   dims.toArray(new ASTNode[0]));
+    //               semanticStack.push(dimList);
+    //               break;
+    //
+    //           case "@MAKE_VARDECL":
+    //               // Pop: dimList, id, type (reverse order!)
+    //               ASTNode dl = semanticStack.pop();  // dimList
+    //               ASTNode vid = semanticStack.pop();  // id
+    //               ASTNode vtype = semanticStack.pop(); // type
+    //               semanticStack.push(
+    //                   ASTNode.makeFamily("varDecl", vtype, vid, dl));
+    //               break;
+    //
+    //           case "@MAKE_ADDOP":
+    //               // Binary operator: pop right, pop operator, pop left
+    //               ASTNode right = semanticStack.pop();
+    //               ASTNode op = semanticStack.pop();
+    //               ASTNode left = semanticStack.pop();
+    //               semanticStack.push(
+    //                   ASTNode.makeFamily("addOp", left, op, right));
+    //               break;
+    //
+    //           // ... similar for all other actions
+    //       }
+    //   }
+    //
+    // HELPER METHOD - popUntilEpsilon():
+    //   Pops ASTNodes from the semantic stack until an epsilon sentinel is
+    //   found. Returns the collected nodes in correct order (reversed from
+    //   pop order). This handles variable-length constructs like:
+    //     - DimList (0+ array dimensions)
+    //     - ParamList (0+ parameters)
+    //     - StatBlock (0+ statements)
+    //     - ClassList (0+ class declarations)
+    //     - FuncDefList (0+ function definitions)
+    //     - InherList (0+ inherited class names)
+    //     - AParams (0+ actual parameters)
+    //   See: 8.5.ASTgeneration.pdf slide 4 ("popuntile" operation)
+    //
+    // FULL LIST OF SEMANTIC ACTIONS TO IMPLEMENT:
+    //   (matches the markers you add to the grammar in A3-05)
+    //
+    //   Leaf actions (push one node):
+    //     @MAKE_ID, @MAKE_INTNUM, @MAKE_FLOATNUM, @MAKE_TYPE,
+    //     @MAKE_VISIBILITY, @MAKE_RELOP, @MAKE_ADDOP_LEAF,
+    //     @MAKE_MULTOP_LEAF, @MAKE_SIGN, @MAKE_VOID
+    //
+    //   Sentinel:
+    //     @PUSH_EPSILON
+    //
+    //   List constructors (popUntilEpsilon):
+    //     @MAKE_DIMLIST, @MAKE_PARAMLIST, @MAKE_CLASSLIST,
+    //     @MAKE_FUNCDEFLIST, @MAKE_INHERLIST, @MAKE_MEMBLIST,
+    //     @MAKE_STATBLOCK, @MAKE_INDEXLIST, @MAKE_APARAMS
+    //
+    //   Composite constructors (pop fixed children):
+    //     @MAKE_VARDECL     -> pop dimList, id, type
+    //     @MAKE_FUNCDECL    -> pop fParamList, id, type/void
+    //     @MAKE_FUNCDEF     -> pop statBlock, fParamList, id, scopeSpec?, type/void
+    //     @MAKE_CLASSDECL   -> pop membList, inherList, id
+    //     @MAKE_PROG        -> pop statBlock, funcDefList, classList
+    //     @MAKE_ASSIGNSTAT   -> pop expr, variable
+    //     @MAKE_IFSTAT      -> pop elseBlock, thenBlock, relExpr
+    //     @MAKE_WHILESTAT   -> pop statBlock, relExpr
+    //     @MAKE_GETSTAT     -> pop variable
+    //     @MAKE_PUTSTAT     -> pop expr
+    //     @MAKE_RETURNSTAT  -> pop expr
+    //     @MAKE_RELEXPR     -> pop right, relOp, left
+    //     @MAKE_ADDOP       -> pop right, addOpLeaf, left (binary)
+    //     @MAKE_MULTOP      -> pop right, multOpLeaf, left (binary)
+    //     @MAKE_NOT         -> pop factor (unary)
+    //     @MAKE_SIGN_EXPR   -> pop factor, sign (unary)
+    //     @MAKE_DOT         -> pop right, left (member access)
+    //     @MAKE_DATAMEMBER  -> pop indexList, id
+    //     @MAKE_FCALL       -> pop aParams, id
+    //
+    // TIP: Build and test incrementally! Start with:
+    //   1. @MAKE_ID, @MAKE_INTNUM, @MAKE_TYPE (leaf nodes)
+    //   2. @PUSH_EPSILON, @MAKE_DIMLIST (list handling)
+    //   3. @MAKE_VARDECL (first composite)
+    //   4. Then add expressions, statements, classes, etc.
+    //
+    // =========================================================================
+
     /**
      * Check if a symbol is a terminal (not a non-terminal).
      * Non-terminals are UPPERCASE entries in the parsing table.
      */
     private boolean isTerminal(String symbol) {
+        // NOTE: After implementing A3-07, you may want to also exclude
+        // semantic action markers (starting with "@") here, OR handle
+        // them before this method is ever called.
         return !ParsingTable.table.containsKey(symbol);
     }
 

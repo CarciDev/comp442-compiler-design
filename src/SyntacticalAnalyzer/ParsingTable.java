@@ -5,6 +5,132 @@ import java.util.*;
 
 public class ParsingTable {
 
+    // =========================================================================
+    // TODO(A3-05): AUGMENT GRAMMAR RULES WITH SEMANTIC ACTION MARKERS
+    // =========================================================================
+    //
+    // WHAT: Insert semantic action markers (strings starting with "@") into
+    //       the RHS of grammar rules. These markers don't change parsing —
+    //       they get pushed onto the parsing stack and, when popped, trigger
+    //       AST-building operations on the semantic stack.
+    //
+    // WHY:  This is the "syntax-directed" part of syntax-directed translation.
+    //       The grammar tells the parser not just HOW to parse, but WHEN to
+    //       build AST nodes. Without these markers, the parser produces a
+    //       derivation but no tree.
+    //       See: 7.SDTII.pdf slide 3-4 (semantic actions in table-driven parsing)
+    //            8.SDTAST.pdf slide 12 (example grammar with semantic actions)
+    //            8.5.ASTgeneration.pdf slides 4, 8 (concrete action examples)
+    //
+    // HOW IT WORKS:
+    //   When the parser pops "@SOME_ACTION" from the stack, it calls the
+    //   corresponding handler method (implemented in Parser.java, A3-08).
+    //   The handler pops ASTNodes from the semantic stack, builds a subtree,
+    //   and pushes the result back.
+    //
+    // APPROACH (see 8.5.ASTgeneration.pdf slide 4):
+    //   Two fundamental patterns:
+    //
+    //   Pattern 1 - LEAF CREATION (atomic concepts):
+    //     When you match a terminal that carries meaning (id, intnum, etc.),
+    //     create a leaf node. You can do this in the terminal-match branch
+    //     of the parser (A3-07) rather than here. But you can also add
+    //     markers like "@MAKE_ID" after "id" in the grammar.
+    //
+    //   Pattern 2 - SUBTREE CREATION (composite concepts):
+    //     After all children of a composite concept have been pushed onto
+    //     the semantic stack, pop them and create the parent node.
+    //     Use "@MAKE_VARDECL", "@MAKE_CLASSDECL", etc.
+    //
+    //   Pattern 3 - EPSILON SENTINEL (variable-length lists):
+    //     Before a repeating construct, push an epsilon marker onto the
+    //     semantic stack. After the repeat, pop everything until epsilon
+    //     to collect all list items.
+    //     Use "@PUSH_EPSILON" before lists and "@MAKE_DIMLIST", etc. after.
+    //
+    // EXAMPLE (rule 114: VARDECL -> TYPE id REPTVARDECL2 semi):
+    //   Original:  {"VARDECL", "TYPE id REPTVARDECL2 semi"}
+    //   Augmented: {"VARDECL", "@PUSH_EPSILON TYPE id @MAKE_ID REPTVARDECL2 semi @MAKE_DIMLIST @MAKE_VARDECL"}
+    //
+    //   What happens during parsing:
+    //     1. @PUSH_EPSILON -> pushes epsilon marker on semantic stack
+    //     2. TYPE matches -> pushes Type leaf (e.g., "integer")
+    //     3. id matches -> token available
+    //     4. @MAKE_ID -> pushes Id leaf from matched token
+    //     5. REPTVARDECL2 -> may push Dim nodes for array sizes
+    //     6. semi matches -> consumed (not in AST)
+    //     7. @MAKE_DIMLIST -> pops until epsilon, creates DimList node
+    //     8. @MAKE_VARDECL -> pops DimList, Id, Type; creates VarDecl
+    //
+    // RULES TO AUGMENT (organized by category):
+    //
+    //   PROGRAM STRUCTURE:
+    //     Rule 52  PROG -> REPTPROG0 REPTPROG1 main FUNCBODY
+    //     Rule 96  START -> PROG
+    //     Rule 78  REPTPROG0 -> CLASSDECL REPTPROG0   (collect classes)
+    //     Rule 79  REPTPROG0 -> EPSILON                (end of classes)
+    //     Rule 80  REPTPROG1 -> FUNCDEF REPTPROG1      (collect functions)
+    //     Rule 81  REPTPROG1 -> EPSILON                (end of functions)
+    //
+    //   CLASS DECLARATIONS:
+    //     Rule 11  CLASSDECL -> class id ... lcurbr REPTCLASSDECL4 rcurbr semi
+    //     Rule 48  OPTCLASSDECL2 -> inherits id REPTOPTCLASSDECL22
+    //     Rule 49  OPTCLASSDECL2 -> EPSILON
+    //     Rule 62  REPTCLASSDECL4 -> VISIBILITY MEMBERDECL REPTCLASSDECL4
+    //     Rule 63  REPTCLASSDECL4 -> EPSILON
+    //
+    //   VARIABLE DECLARATIONS:
+    //     Rule 114 VARDECL -> TYPE id REPTVARDECL2 semi
+    //     Rule 84  REPTVARDECL2 -> ARRAYSIZE REPTVARDECL2    (push dims)
+    //     Rule 85  REPTVARDECL2 -> EPSILON                   (end dims)
+    //     Rule 7-9 ARRAYSIZE/ARRAYSIZE2 -> array dimension
+    //
+    //   FUNCTION DEFINITIONS:
+    //     Rule 30  FUNCDEF -> FUNCHEAD FUNCBODY semi
+    //     Rule 31  FUNCHEAD -> id FUNCHEAD1
+    //     Rule 32  FUNCHEAD1 -> coloncolon id lpar FPARAMS rpar colon FUNCHEAD2
+    //     Rule 33  FUNCHEAD1 -> lpar FPARAMS rpar colon FUNCHEAD2
+    //     Rule 23  FPARAMS -> TYPE id REPTFPARAMS2 REPTFPARAMS3
+    //     Rule 26  FUNCBODY -> OPTFUNCBODY0 do REPTFUNCBODY2 end
+    //
+    //   STATEMENTS:
+    //     Rule 100 STATEMENT -> id STATEMENT2   (assignment or func call)
+    //     Rule 101 STATEMENT -> if lpar RELEXPR rpar then STATBLOCK else STATBLOCK semi
+    //     Rule 102 STATEMENT -> while lpar RELEXPR rpar STATBLOCK semi
+    //     Rule 103 STATEMENT -> read lpar VARIABLE rpar semi
+    //     Rule 104 STATEMENT -> write lpar EXPR rpar semi
+    //     Rule 105 STATEMENT -> return lpar EXPR rpar semi
+    //     Rule 124 STMTIDNEST -> assign EXPR semi     (assignment)
+    //
+    //   EXPRESSIONS:
+    //     Rule 6   ARITHEXPR -> TERM RIGHTRECARITHEXPR
+    //     Rule 91  RIGHTRECARITHEXPR -> ADDOP TERM RIGHTRECARITHEXPR
+    //     Rule 90  RIGHTRECARITHEXPR -> EPSILON
+    //     Rule 110 TERM -> FACTOR RIGHTRECTERM
+    //     Rule 93  RIGHTRECTERM -> MULTOP FACTOR RIGHTRECTERM
+    //     Rule 92  RIGHTRECTERM -> EPSILON
+    //     Rule 15  FACTOR -> id FACTOR2 REPTVARIABLEORFUNCTIONCALL
+    //     Rule 16  FACTOR -> intnum
+    //     Rule 17  FACTOR -> floatnum
+    //     Rule 18  FACTOR -> lpar ARITHEXPR rpar
+    //     Rule 19  FACTOR -> not FACTOR
+    //     Rule 20  FACTOR -> SIGN FACTOR
+    //
+    //   TYPES:
+    //     Rule 111 TYPE -> integer
+    //     Rule 112 TYPE -> float
+    //     Rule 113 TYPE -> id
+    //
+    // IMPORTANT: Semantic action markers must NOT appear in the LL(1) parsing
+    //   table lookups or FIRST/FOLLOW sets. They are only in the RHS strings.
+    //   The parser's isTerminal() method needs updating to recognize "@" prefix
+    //   symbols as neither terminal nor non-terminal (see A3-07).
+    //
+    // TIP: Start with a small subset (e.g., VARDECL, FACTOR terminals, EXPR)
+    //   and test before augmenting the entire grammar. Build incrementally!
+    //
+    // =========================================================================
+
     // All grammar rules indexed by number
     public static final String[][] rules = {
             /*   0 */ {"ADDOP", "plus"},

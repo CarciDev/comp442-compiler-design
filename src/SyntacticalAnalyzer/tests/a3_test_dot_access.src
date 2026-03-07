@@ -1,0 +1,25 @@
+// A3 TEST: Dot notation for member access and method calls
+// Tests: Dot -> left, right
+//        DataMember, FCall through dot
+// Inspired by polynomial.src: new_function.a = A, f1.evaluate(counter)
+class POINT {
+	public float x;
+	public float y;
+	public getX() : float;
+};
+
+POINT::getX() : float
+  do
+    return(x);
+  end
+
+main
+  local
+    POINT p;
+    float val;
+  do
+    p.x = 1.0;
+    p.y = 2.0;
+    val = p.getX();
+    write(val);
+  end

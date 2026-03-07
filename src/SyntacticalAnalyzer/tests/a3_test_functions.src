@@ -1,0 +1,26 @@
+// A3 TEST: Function definitions with params and calls
+// Tests: FuncDef -> Type/void, Id, ParamList, StatBlock
+//        FuncCall -> Id, AParams
+//        VarDecl with array params
+// Inspired by example3 and bubblesort.src
+add(integer a, integer b) : integer
+  do
+    return(a + b);
+  end
+
+printVal(integer x) : void
+  do
+    write(x);
+  end
+
+main
+  local
+    integer a;
+    integer b;
+    integer c;
+  do
+    a = 1;
+    b = 2;
+    c = add(a, b);
+    printVal(c);
+  end

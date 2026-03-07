@@ -1,0 +1,25 @@
+// A3 TEST: Array declarations, indexing, and multi-dimensional access
+// Tests: DimList with dimensions, IndexList for array access
+//        DataMember -> Id, IndexList
+// Inspired by bubblesort.src array operations
+swap(integer arr[], integer i, integer j) : void
+  local
+    integer temp;
+  do
+    temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  end
+
+main
+  local
+    integer arr[10];
+    integer matrix[3][4];
+    integer i;
+  do
+    arr[0] = 42;
+    arr[1] = 17;
+    i = arr[0] + arr[1];
+    write(i);
+    swap(arr, 0, 1);
+  end

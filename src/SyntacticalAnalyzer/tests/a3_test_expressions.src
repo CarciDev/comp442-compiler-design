@@ -1,0 +1,15 @@
+// A3 TEST: Arithmetic expressions with operator precedence
+// Tests: AddOp, MultOp, nested binary operators
+// Inspired by example2: a=a+b*c shows MultOp inside AddOp
+main
+  local
+    integer a;
+    integer b;
+    integer c;
+    integer d;
+  do
+    a = b + c;
+    a = b * c;
+    a = b + c * d;
+    a = (b + c) * d;
+  end
