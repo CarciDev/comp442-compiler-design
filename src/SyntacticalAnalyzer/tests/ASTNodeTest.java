@@ -42,37 +42,37 @@ public class ASTNodeTest {
     // A3-01 TESTS: Node Creation
     // =====================================================================
 
-    /** Test: Create leaf nodes (id, intNum, floatNum, type) with values */
+    /** Test: Create leaf nodes (Id, Num, Type) with values */
     static void testLeafNodeCreation() {
         // After A3-01, you should be able to create leaf nodes like:
-        //   ASTNode idNode = ASTNode.makeNode("id", "myVar", 5);
-        //   ASTNode numNode = ASTNode.makeNode("intNum", "42", 3);
-        //   ASTNode typeNode = ASTNode.makeNode("type", "integer", 1);
+        //   ASTNode idNode = ASTNode.makeNode("Id", "myVar", 5);
+        //   ASTNode numNode = ASTNode.makeNode("Num", "42", 3);
+        //   ASTNode typeNode = ASTNode.makeNode("Type", "int", 1);
         //
         // Verify:
         //   - node.getType() returns the type string
         //   - node.getValue() returns the value string
         //   - node.getChildren() is empty (it's a leaf)
-        //   - node.getLine() returns the line number
+        //   - node.getLineNumber() returns the line number
 
         try {
-            ASTNode idNode = ASTNode.makeNode("id", "myVar", 5);
-            check("Leaf id - type", "id".equals(idNode.getType()));
-            check("Leaf id - value", "myVar".equals(idNode.getValue()));
-            check("Leaf id - no children", idNode.getChildren().isEmpty());
-            check("Leaf id - line", idNode.getLine() == 5);
+            ASTNode idNode = ASTNode.makeNode("Id", "myVar", 5);
+            check("Leaf Id - type", "Id".equals(idNode.getType()));
+            check("Leaf Id - value", "myVar".equals(idNode.getValue()));
+            check("Leaf Id - no children", idNode.getChildren() == null);
+            check("Leaf Id - line", idNode.getLineNumber() == 5);
 
-            ASTNode numNode = ASTNode.makeNode("intNum", "42", 3);
-            check("Leaf intNum - type", "intNum".equals(numNode.getType()));
-            check("Leaf intNum - value", "42".equals(numNode.getValue()));
+            ASTNode numNode = ASTNode.makeNode("Num", "42", 3);
+            check("Leaf Num - type", "Num".equals(numNode.getType()));
+            check("Leaf Num - value", "42".equals(numNode.getValue()));
 
-            ASTNode floatNode = ASTNode.makeNode("floatNum", "3.14", 7);
-            check("Leaf floatNum - type", "floatNum".equals(floatNode.getType()));
-            check("Leaf floatNum - value", "3.14".equals(floatNode.getValue()));
+            ASTNode floatNode = ASTNode.makeNode("Num", "3.14", 7);
+            check("Leaf Num float - type", "Num".equals(floatNode.getType()));
+            check("Leaf Num float - value", "3.14".equals(floatNode.getValue()));
 
-            ASTNode typeNode = ASTNode.makeNode("type", "integer", 1);
-            check("Leaf type - type", "type".equals(typeNode.getType()));
-            check("Leaf type - value", "integer".equals(typeNode.getValue()));
+            ASTNode typeNode = ASTNode.makeNode("Type", "int", 1);
+            check("Leaf Type - type", "Type".equals(typeNode.getType()));
+            check("Leaf Type - value", "int".equals(typeNode.getValue()));
         } catch (Exception e) {
             check("Leaf node creation threw exception: " + e.getMessage(), false);
         }
@@ -81,8 +81,8 @@ public class ASTNodeTest {
     /** Test: Create composite nodes (no value, will have children) */
     static void testCompositeNodeCreation() {
         try {
-            ASTNode varDecl = ASTNode.makeNode("varDecl");
-            check("Composite - type", "varDecl".equals(varDecl.getType()));
+            ASTNode varDecl = ASTNode.makeNode("VarDecl");
+            check("Composite - type", "VarDecl".equals(varDecl.getType()));
             check("Composite - no value", varDecl.getValue() == null || varDecl.getValue().isEmpty());
             check("Composite - no children yet", varDecl.getChildren().isEmpty());
         } catch (Exception e) {
@@ -93,8 +93,8 @@ public class ASTNodeTest {
     /** Test: Create epsilon sentinel node */
     static void testEpsilonNode() {
         try {
-            ASTNode eps = ASTNode.makeNode("epsilon");
-            check("Epsilon - type", "epsilon".equals(eps.getType()));
+            ASTNode eps = ASTNode.makeNode("Epsilon");
+            check("Epsilon - type", "Epsilon".equals(eps.getType()));
         } catch (Exception e) {
             check("Epsilon node creation threw exception: " + e.getMessage(), false);
         }
@@ -106,20 +106,20 @@ public class ASTNodeTest {
 
     /** Test: adoptChildren makes nodes children of a parent */
     static void testAdoptChildren() {
-        // Build:  varDecl -> [type, id]
+        // Build:  VarDecl -> [Type, Id]
         try {
-            ASTNode parent = ASTNode.makeNode("varDecl");
-            ASTNode child1 = ASTNode.makeNode("type", "integer", 1);
-            ASTNode child2 = ASTNode.makeNode("id", "x", 1);
+            ASTNode parent = ASTNode.makeNode("VarDecl");
+            ASTNode child1 = ASTNode.makeNode("Type", "int", 1);
+            ASTNode child2 = ASTNode.makeNode("Id", "x", 1);
 
             ASTNode.adoptChildren(parent, child1);
             ASTNode.adoptChildren(parent, child2);
 
             check("adoptChildren - has 2 children", parent.getChildren().size() == 2);
-            check("adoptChildren - first child is type",
-                    "type".equals(parent.getChildren().get(0).getType()));
-            check("adoptChildren - second child is id",
-                    "id".equals(parent.getChildren().get(1).getType()));
+            check("adoptChildren - first child is Type",
+                    "Type".equals(parent.getChildren().get(0).getType()));
+            check("adoptChildren - second child is Id",
+                    "Id".equals(parent.getChildren().get(1).getType()));
         } catch (Exception e) {
             check("adoptChildren threw exception: " + e.getMessage(), false);
         }
@@ -131,8 +131,8 @@ public class ASTNodeTest {
         // uses a children list on the parent instead of sibling pointers,
         // you may adapt this test accordingly.
         try {
-            ASTNode node1 = ASTNode.makeNode("id", "a", 1);
-            ASTNode node2 = ASTNode.makeNode("id", "b", 1);
+            ASTNode node1 = ASTNode.makeNode("Id", "a", 1);
+            ASTNode node2 = ASTNode.makeNode("Id", "b", 1);
             ASTNode.makeSiblings(node1, node2);
             // Verify they are linked (implementation-dependent check)
             check("makeSiblings - nodes created without error", true);
@@ -143,14 +143,14 @@ public class ASTNodeTest {
 
     /** Test: makeFamily creates parent with given children */
     static void testMakeFamily() {
-        // Build: addOp -> [id("a"), id("b")]
+        // Build: AddOp -> [Id("a"), Id("b")]
         // This matches: a + b -> AddOp with two children
         try {
-            ASTNode left = ASTNode.makeNode("id", "a", 1);
-            ASTNode right = ASTNode.makeNode("id", "b", 1);
-            ASTNode addOp = ASTNode.makeFamily("addOp", left, right);
+            ASTNode left = ASTNode.makeNode("Id", "a", 1);
+            ASTNode right = ASTNode.makeNode("Id", "b", 1);
+            ASTNode addOp = ASTNode.makeFamily("AddOp", left, right);
 
-            check("makeFamily - type", "addOp".equals(addOp.getType()));
+            check("makeFamily - type", "AddOp".equals(addOp.getType()));
             check("makeFamily - 2 children", addOp.getChildren().size() == 2);
             check("makeFamily - left child", "a".equals(addOp.getChildren().get(0).getValue()));
             check("makeFamily - right child", "b".equals(addOp.getChildren().get(1).getValue()));
@@ -174,16 +174,16 @@ public class ASTNodeTest {
             // Simulate semantic stack operations
             java.util.Deque<ASTNode> stack = new java.util.ArrayDeque<>();
 
-            // Push epsilon sentinel
-            stack.push(ASTNode.makeNode("epsilon"));
+            // Push Epsilon sentinel
+            stack.push(ASTNode.makeNode("Epsilon"));
             // Push dimensions (in parsing order)
-            stack.push(ASTNode.makeNode("intNum", "5", 1));
-            stack.push(ASTNode.makeNode("intNum", "3", 1));
-            stack.push(ASTNode.makeNode("intNum", "2", 1));
+            stack.push(ASTNode.makeNode("Dim", "5", 1));
+            stack.push(ASTNode.makeNode("Dim", "3", 1));
+            stack.push(ASTNode.makeNode("Dim", "2", 1));
 
-            // Pop until epsilon (your helper method does this)
+            // Pop until Epsilon (your helper method does this)
             java.util.List<ASTNode> collected = new java.util.ArrayList<>();
-            while (!"epsilon".equals(stack.peek().getType())) {
+            while (!"Epsilon".equals(stack.peek().getType())) {
                 collected.add(0, stack.pop()); // prepend to reverse order
             }
             stack.pop(); // remove epsilon
@@ -192,7 +192,7 @@ public class ASTNodeTest {
             check("popUntilEpsilon - first is 5", "5".equals(collected.get(0).getValue()));
             check("popUntilEpsilon - second is 3", "3".equals(collected.get(1).getValue()));
             check("popUntilEpsilon - third is 2", "2".equals(collected.get(2).getValue()));
-            check("popUntilEpsilon - epsilon removed", stack.isEmpty());
+            check("popUntilEpsilon - Epsilon removed", stack.isEmpty());
         } catch (Exception e) {
             check("popUntilEpsilon threw exception: " + e.getMessage(), false);
         }
@@ -203,28 +203,26 @@ public class ASTNodeTest {
      * Models: integer x[5][3];
      * Expected AST:
      *   VarDecl
-     *   | Type | integer
+     *   | Type | int
      *   | Id | x
      *   | DimList
-     *   | | Num | 5
-     *   | | Num | 3
-     *
-     * Reference: 8.5.ASTgeneration.pdf slides 3-5
+     *   | | Dim | 5
+     *   | | Dim | 3
      */
     static void testBuildVarDecl() {
         try {
-            ASTNode typeNode = ASTNode.makeNode("type", "integer", 1);
-            ASTNode idNode = ASTNode.makeNode("id", "x", 1);
-            ASTNode dim1 = ASTNode.makeNode("intNum", "5", 1);
-            ASTNode dim2 = ASTNode.makeNode("intNum", "3", 1);
-            ASTNode dimList = ASTNode.makeFamily("dimList", dim1, dim2);
-            ASTNode varDecl = ASTNode.makeFamily("varDecl", typeNode, idNode, dimList);
+            ASTNode typeNode = ASTNode.makeNode("Type", "int", 1);
+            ASTNode idNode = ASTNode.makeNode("Id", "x", 1);
+            ASTNode dim1 = ASTNode.makeNode("Dim", "5", 1);
+            ASTNode dim2 = ASTNode.makeNode("Dim", "3", 1);
+            ASTNode dimList = ASTNode.makeFamily("DimList", dim1, dim2);
+            ASTNode varDecl = ASTNode.makeFamily("VarDecl", typeNode, idNode, dimList);
 
-            check("VarDecl - type correct", "varDecl".equals(varDecl.getType()));
+            check("VarDecl - type correct", "VarDecl".equals(varDecl.getType()));
             check("VarDecl - 3 children", varDecl.getChildren().size() == 3);
-            check("VarDecl - child 0 is Type", "type".equals(varDecl.getChildren().get(0).getType()));
-            check("VarDecl - child 1 is Id", "id".equals(varDecl.getChildren().get(1).getType()));
-            check("VarDecl - child 2 is DimList", "dimList".equals(varDecl.getChildren().get(2).getType()));
+            check("VarDecl - child 0 is Type", "Type".equals(varDecl.getChildren().get(0).getType()));
+            check("VarDecl - child 1 is Id", "Id".equals(varDecl.getChildren().get(1).getType()));
+            check("VarDecl - child 2 is DimList", "DimList".equals(varDecl.getChildren().get(2).getType()));
             check("VarDecl - DimList has 2 dims", varDecl.getChildren().get(2).getChildren().size() == 2);
         } catch (Exception e) {
             check("VarDecl build threw exception: " + e.getMessage(), false);
@@ -244,16 +242,16 @@ public class ASTNodeTest {
      */
     static void testBuildAssignStatWithAddOp() {
         try {
-            ASTNode lhs = ASTNode.makeNode("id", "a", 1);
-            ASTNode left = ASTNode.makeNode("id", "b", 1);
-            ASTNode right = ASTNode.makeNode("id", "c", 1);
-            ASTNode addOp = ASTNode.makeFamily("addOp", left, right);
-            ASTNode assign = ASTNode.makeFamily("assignStat", lhs, addOp);
+            ASTNode lhs = ASTNode.makeNode("Id", "a", 1);
+            ASTNode left = ASTNode.makeNode("Id", "b", 1);
+            ASTNode right = ASTNode.makeNode("Id", "c", 1);
+            ASTNode addOp = ASTNode.makeFamily("AddOp", left, right);
+            ASTNode assign = ASTNode.makeFamily("AssignStat", lhs, addOp);
 
-            check("AssignStat - type", "assignStat".equals(assign.getType()));
+            check("AssignStat - type", "AssignStat".equals(assign.getType()));
             check("AssignStat - 2 children", assign.getChildren().size() == 2);
-            check("AssignStat - LHS is id", "id".equals(assign.getChildren().get(0).getType()));
-            check("AssignStat - RHS is addOp", "addOp".equals(assign.getChildren().get(1).getType()));
+            check("AssignStat - LHS is Id", "Id".equals(assign.getChildren().get(0).getType()));
+            check("AssignStat - RHS is AddOp", "AddOp".equals(assign.getChildren().get(1).getType()));
 
             ASTNode addChild = assign.getChildren().get(1);
             check("AddOp - left is b", "b".equals(addChild.getChildren().get(0).getValue()));
@@ -272,17 +270,17 @@ public class ASTNodeTest {
      */
     static void testBuildProgStructure() {
         try {
-            ASTNode classList = ASTNode.makeFamily("classList");
-            ASTNode funcDefList = ASTNode.makeFamily("funcDefList");
-            ASTNode programBlock = ASTNode.makeFamily("programBlock");
-            ASTNode prog = ASTNode.makeFamily("prog", classList, funcDefList, programBlock);
+            ASTNode classList = ASTNode.makeFamily("ClassList");
+            ASTNode funcDefList = ASTNode.makeFamily("FuncDefList");
+            ASTNode programBlock = ASTNode.makeFamily("ProgramBlock");
+            ASTNode prog = ASTNode.makeFamily("Prog", classList, funcDefList, programBlock);
 
-            check("Prog - type", "prog".equals(prog.getType()));
+            check("Prog - type", "Prog".equals(prog.getType()));
             check("Prog - 3 children", prog.getChildren().size() == 3);
-            check("Prog - child 0 is classList", "classList".equals(prog.getChildren().get(0).getType()));
-            check("Prog - child 1 is funcDefList", "funcDefList".equals(prog.getChildren().get(1).getType()));
-            check("Prog - child 2 is programBlock", "programBlock".equals(prog.getChildren().get(2).getType()));
-            check("Prog - classList empty", prog.getChildren().get(0).getChildren().isEmpty());
+            check("Prog - child 0 is ClassList", "ClassList".equals(prog.getChildren().get(0).getType()));
+            check("Prog - child 1 is FuncDefList", "FuncDefList".equals(prog.getChildren().get(1).getType()));
+            check("Prog - child 2 is ProgramBlock", "ProgramBlock".equals(prog.getChildren().get(2).getType()));
+            check("Prog - ClassList empty", prog.getChildren().get(0).getChildren().isEmpty());
         } catch (Exception e) {
             check("Prog structure threw exception: " + e.getMessage(), false);
         }

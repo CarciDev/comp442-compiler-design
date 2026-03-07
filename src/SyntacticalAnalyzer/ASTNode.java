@@ -24,50 +24,52 @@ package src.SyntacticalAnalyzer;
 //   Option B: Class hierarchy (abstract ASTNode, subclass per type)
 //             More OOP, but 20+ classes to maintain.
 //
-// NODE TYPES YOU NEED (see 8.SDTAST.pdf slides 34-41 for the full reference):
+// NODE TYPES
+// Sources: assignment 3 example .outast files (ground truth) + assignment grammar
 //
 //   COMPOSITE (internal nodes - have children):
-//     prog         -> children: classList, funcDefList, statBlock (always 3)
-//     classList     -> children: zero or more classDecl
-//     funcDefList   -> children: zero or more funcDef
-//     classDecl     -> children: id, inherList, membList
-//     funcDef       -> children: type|void, scopeSpec?, id, fParamList, statBlock
-//     inherList     -> children: zero or more id
-//     membList      -> children: zero or more membDecl (varDecl or funcDecl)
-//     fParamList    -> children: zero or more varDecl
-//     varDecl       -> children: type, id, dimList
-//     funcDecl      -> children: type, id, fParamList
-//     dimList       -> children: zero or more num
-//     statBlock     -> children: zero or more statement/varDecl
-//     ifStat        -> children: relExpr, statBlock (then), statBlock (else)
-//     whileStat     -> children: relExpr, statBlock
-//     assignStat    -> children: variable, expr
-//     getStat       -> children: variable
-//     putStat       -> children: expr
-//     returnStat    -> children: expr
-//     relExpr       -> children: arithExpr, relOp, arithExpr
-//     addOp         -> children: left arithExpr, right term (binary, always 2 + operator)
-//     multOp        -> children: left term, right factor (binary, always 2 + operator)
-//     not           -> children: factor (unary)
-//     sign          -> children: factor (unary)
-//     dot           -> children: left, right (member access chain)
-//     dataMember    -> children: id, indexList
-//     fCall         -> children: id, aParams
-//     indexList     -> children: zero or more arithExpr
-//     aParams       -> children: zero or more expr
+//
+//     --- Confirmed by example .outast files ---
+//     Prog          -> children: ClassList, FuncDefList, ProgramBlock (always 3)
+//     ClassList     -> children: zero or more Class
+//     FuncDefList   -> children: zero or more FuncDef
+//     Class         -> children: Id, [InherList], {Visibility, VarDecl/FuncDecl}...
+//     FuncDef       -> children: [Id (scope)], Type/Void, Id, ParamList, StatBlock
+//     ParamList     -> children: zero or more VarDecl (also used for aParams in FuncCall)
+//     VarDecl       -> children: Type, Id, DimList
+//     DimList       -> children: zero or more Dim
+//     ProgramBlock  -> children: zero or more VarDecl/statement (main program body)
+//     StatBlock     -> children: zero or more VarDecl/statement (function body)
+//     AssignStat    -> children: variable, expr
+//     PutStat       -> children: expr                     (from: write '(' expr ')')
+//     ReturnStat    -> children: expr                     (from: return '(' expr ')')
+//     AddOp         -> children: left expr, right expr    (binary; operator stored in value)
+//     MultOp        -> children: left expr, right expr    (binary; operator stored in value)
+//     FuncCall      -> children: Id, ParamList            (both as expr and as standalone statement)
+//
+//     --- From grammar, not shown in provided examples ---
+//     IfStat        -> children: RelExpr, StatBlock (then), StatBlock (else)
+//     WhileStat     -> children: RelExpr, StatBlock
+//     GetStat       -> children: variable                 (from: read '(' variable ')')
+//     RelExpr       -> children: arithExpr, RelOp, arithExpr
+//     Not           -> children: factor                   (unary)
+//     Sign          -> children: factor                   (unary; sign stored in value)
+//     Dot           -> children: left, right              (member access: a.b)
+//     DataMember    -> children: Id, IndexList            (variable with optional indices)
+//     IndexList     -> children: zero or more arithExpr   (from: {{indice}})
+//     InherList     -> children: zero or more Id          (from: inherits id {',' id})
+//     FuncDecl      -> children: Id, ParamList, Type/Void (function declaration in class)
+//     Visibility    -> leaf-like wrapper, value = "public" or "private"
 //
 //   ATOMIC (leaf nodes - no children, carry a value):
-//     id            -> value = identifier string (e.g., "myVar")
-//     intNum        -> value = integer literal (e.g., "42")
-//     floatNum      -> value = float literal (e.g., "3.14")
-//     type          -> value = "integer", "float", or class name
-//     visibility    -> value = "public" or "private"
-//     relOp         -> value = "eq","neq","lt","gt","leq","geq"
-//     addOp (leaf)  -> value = "plus","minus","or" (operator token)
-//     multOp (leaf) -> value = "mult","div","and" (operator token)
-//     sign (leaf)   -> value = "plus" or "minus"
-//     void          -> value = "void"
-//     epsilon       -> marker for empty lists (used during stack operations)
+//     Id            -> value = identifier string          (e.g., "myVar")
+//     Num           -> value = integer or float literal   (e.g., "1", "3.14")
+//     Type          -> value = "int", "float", or class name
+//     Dim           -> value = array dimension size       (e.g., "5"; empty for [])
+//     Void          -> value = "void"                     (return type for functions)
+//     RelOp         -> value = "eq","neq","lt","gt","leq","geq"
+//     Sign (leaf)   -> value = "+" or "-"                 (operator token)
+//     Epsilon       -> marker for empty lists (used during semantic stack operations)
 //
 // REQUIRED FIELDS:
 //   - String type        (node type from list above)
@@ -93,27 +95,23 @@ package src.SyntacticalAnalyzer;
 // METHODS TO IMPLEMENT:
 //
 //   1. makeNode(String type, String value, int line)
-//      Creates a LEAF node (atomic concept). Used for id, intNum, type, etc.
-//      Example: makeNode("id", "myVar", 5) -> leaf node for identifier "myVar"
-//      See: 8.SDTAST.pdf slide 8
+//      Creates a LEAF node (atomic concept). Used for Id, Num, Type, etc.
+//      Example: makeNode("Id", "myVar", 5) -> leaf node for identifier "myVar"
 //
 //   2. makeNode(String type)
 //      Creates an INTERNAL node (composite concept) with no value yet.
-//      Example: makeNode("varDecl") -> empty varDecl waiting for children
+//      Example: makeNode("VarDecl") -> empty VarDecl waiting for children
 //
 //   3. adoptChildren(ASTNode parent, ASTNode child)
 //      Makes 'child' (and all its siblings) children of 'parent'.
-//      See: 8.SDTAST.pdf slide 9
 //
 //   4. makeSiblings(ASTNode node1, ASTNode node2)
 //      Links node1 and node2 as siblings (they share a parent).
 //      Appends node2 to the end of node1's sibling list.
-//      See: 8.SDTAST.pdf slide 9
 //
 //   5. makeFamily(String parentType, ASTNode... children)
 //      Shorthand: creates a parent node and adopts all children.
-//      Example: makeFamily("addOp", leftExpr, rightTerm)
-//      See: 8.SDTAST.pdf slide 10
+//      Example: makeFamily("AddOp", leftExpr, rightTerm)
 //
 // KEY INSIGHT from 8.5.ASTgeneration.pdf slide 4:
 //   - "createLeaf(type)" = makeNode for a leaf
@@ -124,7 +122,72 @@ package src.SyntacticalAnalyzer;
 //     then popuntile collects everything into a list node.
 //
 // =============================================================================
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class ASTNode {
-    // Implement here
+    private String type;
+    private String value;
+    private List<ASTNode> children;
+    private ASTNode parent;
+    private int lineNumber;
+
+    //constructors
+
+    //Creating Leaf
+    public ASTNode(String type, String value, int lineNumber) {
+        this.type = type; //leaf type
+        this.value = value; //leaf value
+        this.children = null; //leafs don't have children
+        this.lineNumber = lineNumber; //for traceability
+    }
+
+    //Creating Composite
+    public ASTNode(String type,int lineNumber){
+        this.type = type; //composite type
+        this.value = null; //composites don't have values, only children.
+        this.children = new ArrayList<>(); //composites have children.
+        this.lineNumber = lineNumber; //for traceability
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public List<ASTNode> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<ASTNode> children) {
+        this.children = children;
+    }
+
+    public ASTNode getParent() {
+        return parent;
+    }
+
+    public void setParent(ASTNode parent) {
+        this.parent = parent;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 }
