@@ -1,7 +1,7 @@
 package src.SyntacticalAnalyzer;
 
 // =============================================================================
-// TODO(A3-01): CREATE THE AST NODE CLASS
+// CREATE THE AST NODE CLASS
 // =============================================================================
 //
 // WHAT: Build the data structure that represents each node in the Abstract
@@ -81,7 +81,7 @@ package src.SyntacticalAnalyzer;
 // =============================================================================
 
 // =============================================================================
-// TODO(A3-02): IMPLEMENT TREE-BUILDING METHODS
+// IMPLEMENT TREE-BUILDING METHODS
 // =============================================================================
 //
 // WHAT: Factory/helper methods that the semantic actions will call to
@@ -183,6 +183,11 @@ public class ASTNode {
         parentNode.getChildren().add(childNode); //get the children
         childNode.setParent(parentNode); //set the link to the parent.
         return parentNode;
+    }
+
+    //Visitor Accept
+    public void accept(Visitor v){
+        v.visit(this);
     }
 
     //Getters and Setters

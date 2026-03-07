@@ -33,4 +33,5 @@ package src.SyntacticalAnalyzer;
 
 public interface Visitor {
     // Implement here
+    public void visit(ASTNode node);
 }
