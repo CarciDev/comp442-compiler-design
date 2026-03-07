@@ -28,6 +28,3 @@ replay_pid*
 
 # IDE
 .idea/
-
-# Claude
-.claude/
