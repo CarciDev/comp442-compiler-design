@@ -60,6 +60,10 @@ public class Parser {
     //
     // =========================================================================
 
+    private final Deque<ASTNode> semanticStack; //semantic stack
+    private ASTNode astRoot; //root of AST-Tree
+    private Token lastMatchedToken; //to keep track of line number.
+
     // Derivation tracking - maintains the current sentential form
     private final List<String> sententialForm;
 
@@ -71,6 +75,7 @@ public class Parser {
         this.derivationWriter = derivationWriter;
         this.errorWriter = errorWriter;
         this.stack = new ArrayDeque<>();
+        this.semanticStack = new ArrayDeque<>();
         this.sententialForm = new ArrayList<>();
         this.success = true;
         this.errorCount = 0;
@@ -187,7 +192,9 @@ public class Parser {
                     + ": unexpected tokens after end of program");
             success = false;
         }
-
+        if (!semanticStack.isEmpty()) {
+            astRoot = semanticStack.pop();
+        }
         return success;
     }
 
@@ -282,55 +289,67 @@ public class Parser {
     //       switch (action) {
     //           case "@MAKE_ID":
     //               // Leaf: push an Id node using the last matched token
-    //               semanticStack.push(ASTNode.makeNode("id",
+    //               semanticStack.push(ASTNode.makeNode("Id",
     //                   lastMatchedToken.getLexeme(),
     //                   lastMatchedToken.getLine()));
     //               break;
     //
     //           case "@MAKE_INTNUM":
-    //               semanticStack.push(ASTNode.makeNode("intNum",
+    //               // Leaf: push an IntNum node (e.g., array dim sizes, integer literals)
+    //               semanticStack.push(ASTNode.makeNode("IntNum",
+    //                   lastMatchedToken.getLexeme(),
+    //                   lastMatchedToken.getLine()));
+    //               break;
+    //
+    //           case "@MAKE_FLOATNUM":
+    //               // Leaf: push a FloatNum node
+    //               semanticStack.push(ASTNode.makeNode("FloatNum",
     //                   lastMatchedToken.getLexeme(),
     //                   lastMatchedToken.getLine()));
     //               break;
     //
     //           case "@MAKE_TYPE":
-    //               semanticStack.push(ASTNode.makeNode("type",
+    //               semanticStack.push(ASTNode.makeNode("Type",
     //                   lastMatchedToken.getLexeme(),
     //                   lastMatchedToken.getLine()));
     //               break;
     //
+    //           case "@MAKE_NODE_EPSILON":
+    //               // Leaf: push an Epsilon node (e.g., unsized array dim [])
+    //               semanticStack.push(ASTNode.makeNode("Epsilon"));
+    //               break;
+    //
     //           case "@PUSH_EPSILON":
     //               // Push sentinel marker for variable-length lists
-    //               semanticStack.push(ASTNode.makeNode("epsilon"));
+    //               semanticStack.push(ASTNode.makeNode("Epsilon"));
     //               break;
     //
     //           case "@MAKE_DIMLIST":
-    //               // Pop until epsilon, collect into a DimList
+    //               // Pop until Epsilon, collect into a DimList
     //               List<ASTNode> dims = popUntilEpsilon();
-    //               ASTNode dimList = ASTNode.makeFamily("dimList",
-    //                   dims.toArray(new ASTNode[0]));
-    //               semanticStack.push(dimList);
+    //               semanticStack.push(ASTNode.makeFamily("DimList",
+    //                   dims.toArray(new ASTNode[0])));
     //               break;
     //
     //           case "@MAKE_VARDECL":
-    //               // Pop: dimList, id, type (reverse order!)
-    //               ASTNode dl = semanticStack.pop();  // dimList
-    //               ASTNode vid = semanticStack.pop();  // id
-    //               ASTNode vtype = semanticStack.pop(); // type
+    //               // Pop: DimList, Id, Type (reverse order from how they were pushed!)
+    //               ASTNode dl = semanticStack.pop();    // DimList
+    //               ASTNode vid = semanticStack.pop();   // Id
+    //               ASTNode vtype = semanticStack.pop(); // Type
     //               semanticStack.push(
-    //                   ASTNode.makeFamily("varDecl", vtype, vid, dl));
+    //                   ASTNode.makeFamily("VarDecl", vtype, vid, dl));
     //               break;
     //
-    //           case "@MAKE_ADDOP":
-    //               // Binary operator: pop right, pop operator, pop left
-    //               ASTNode right = semanticStack.pop();
-    //               ASTNode op = semanticStack.pop();
-    //               ASTNode left = semanticStack.pop();
+    //           case "@MAKE_ADDNODE":
+    //               // Ternary: pop right, addOp, left -> addOp becomes parent
+    //               ASTNode addRight = semanticStack.pop();  // right TERM
+    //               ASTNode addOp = semanticStack.pop();     // AddOp leaf
+    //               ASTNode addLeft = semanticStack.pop();   // left TERM
     //               semanticStack.push(
-    //                   ASTNode.makeFamily("addOp", left, op, right));
+    //                   ASTNode.makeFamily("AddOp", addLeft, addOp, addRight));
     //               break;
     //
-    //           // ... similar for all other actions
+    //           // ... similar for all other actions (see full list below)
     //       }
     //   }
     //
@@ -338,54 +357,78 @@ public class Parser {
     //   Pops ASTNodes from the semantic stack until an epsilon sentinel is
     //   found. Returns the collected nodes in correct order (reversed from
     //   pop order). This handles variable-length constructs like:
-    //     - DimList (0+ array dimensions)
-    //     - ParamList (0+ parameters)
-    //     - StatBlock (0+ statements)
-    //     - ClassList (0+ class declarations)
-    //     - FuncDefList (0+ function definitions)
-    //     - InherList (0+ inherited class names)
-    //     - AParams (0+ actual parameters)
+    //     - DimList, IndiceList, FParamsList, AParamsList
+    //     - ClassList, FuncDefList, InheritList, MemberList
+    //     - VarDeclList, StatList, StatBlock
     //   See: 8.5.ASTgeneration.pdf slide 4 ("popuntile" operation)
     //
-    // FULL LIST OF SEMANTIC ACTIONS TO IMPLEMENT:
-    //   (matches the markers you add to the grammar in A3-05)
+    // =====================================================================
+    // FULL LIST OF SEMANTIC ACTIONS TO IMPLEMENT
+    // (matches the markers in ParsingTable.java A3-05)
+    // =====================================================================
     //
-    //   Leaf actions (push one node):
-    //     @MAKE_ID, @MAKE_INTNUM, @MAKE_FLOATNUM, @MAKE_TYPE,
-    //     @MAKE_VISIBILITY, @MAKE_RELOP, @MAKE_ADDOP_LEAF,
-    //     @MAKE_MULTOP_LEAF, @MAKE_SIGN, @MAKE_VOID
+    // --- Leaf actions (push one node from lastMatchedToken) ---
+    //   @MAKE_ID            -> Id leaf (identifier)
+    //   @MAKE_INTNUM        -> IntNum leaf (integer literal)
+    //   @MAKE_FLOATNUM      -> FloatNum leaf (float literal)
+    //   @MAKE_TYPE          -> Type leaf ("integer", "float", or class id)
+    //   @MAKE_VOID          -> Void leaf ("void" return type)
+    //   @MAKE_VISIBILITY    -> Visibility leaf ("public" or "private")
+    //   @MAKE_ADDOP         -> AddOp leaf (+/-/or) from lastMatchedToken
+    //   @MAKE_MULTOP        -> MultOp leaf (*/ / /and) from lastMatchedToken
+    //   @MAKE_RELOP         -> RelOp leaf (eq/neq/lt/gt/leq/geq)
+    //   @MAKE_SIGN          -> Sign leaf ("+" or "-")
+    //   @MAKE_NODE_EPSILON  -> Epsilon leaf (e.g., unsized array dim [])
     //
-    //   Sentinel:
-    //     @PUSH_EPSILON
+    // --- Sentinel ---
+    //   @PUSH_EPSILON       -> push Epsilon marker for list boundaries
     //
-    //   List constructors (popUntilEpsilon):
-    //     @MAKE_DIMLIST, @MAKE_PARAMLIST, @MAKE_CLASSLIST,
-    //     @MAKE_FUNCDEFLIST, @MAKE_INHERLIST, @MAKE_MEMBLIST,
-    //     @MAKE_STATBLOCK, @MAKE_INDEXLIST, @MAKE_APARAMS
+    // --- List constructors (popUntilEpsilon) ---
+    //   @MAKE_DIMLIST       -> DimList(intNum|epsilon*)
+    //   @MAKE_INDICELIST    -> IndiceList(arithExpr*)
+    //   @MAKE_FPARAMSLIST   -> FParamsList(fParam*)
+    //   @MAKE_APARAMSLIST   -> AParamsList(expr*)
+    //   @MAKE_CLASSLIST     -> ClassList(classDecl*)
+    //   @MAKE_FUNCDEFLIST   -> FuncDefList(funcDef*)
+    //   @MAKE_INHERITLIST   -> InheritList(id*)
+    //   @MAKE_MEMBERLIST    -> MemberList(memberDecl*)
+    //   @MAKE_VARDECLLIST   -> VarDeclList(varDecl*)
+    //   @MAKE_STATLIST      -> StatList(statement*)
+    //   @MAKE_STATBLOCK     -> StatBlock(statement*)
     //
-    //   Composite constructors (pop fixed children):
-    //     @MAKE_VARDECL     -> pop dimList, id, type
-    //     @MAKE_FUNCDECL    -> pop fParamList, id, type/void
-    //     @MAKE_FUNCDEF     -> pop statBlock, fParamList, id, scopeSpec?, type/void
-    //     @MAKE_CLASSDECL   -> pop membList, inherList, id
-    //     @MAKE_PROG        -> pop statBlock, funcDefList, classList
-    //     @MAKE_ASSIGNSTAT   -> pop expr, variable
-    //     @MAKE_IFSTAT      -> pop elseBlock, thenBlock, relExpr
-    //     @MAKE_WHILESTAT   -> pop statBlock, relExpr
-    //     @MAKE_GETSTAT     -> pop variable
-    //     @MAKE_PUTSTAT     -> pop expr
-    //     @MAKE_RETURNSTAT  -> pop expr
-    //     @MAKE_RELEXPR     -> pop right, relOp, left
-    //     @MAKE_ADDOP       -> pop right, addOpLeaf, left (binary)
-    //     @MAKE_MULTOP      -> pop right, multOpLeaf, left (binary)
-    //     @MAKE_NOT         -> pop factor (unary)
-    //     @MAKE_SIGN_EXPR   -> pop factor, sign (unary)
-    //     @MAKE_DOT         -> pop right, left (member access)
-    //     @MAKE_DATAMEMBER  -> pop indexList, id
-    //     @MAKE_FCALL       -> pop aParams, id
+    // --- Composite constructors (pop fixed children) ---
+    //   @MAKE_PROG          -> pop 3: FuncBody(main), FuncDefList, ClassList
+    //   @MAKE_CLASSDECL     -> pop 3: MemberList, InheritList, Id (className)
+    //   @MAKE_MEMBERDECL    -> pop 2: declaration (VarDecl/FuncDecl), Visibility
+    //   @MAKE_FUNCDECL      -> pop 3: Type/Void (return), FParamsList, Id (funcName)
+    //   @MAKE_FUNCDEF       -> pop 2: FuncBody, FuncHead
+    //   @MAKE_FUNCHEAD      -> pop 4: Type/Void (return), FParamsList, Id (funcName), Id/Epsilon (scope)
+    //   @MAKE_FUNCBODY      -> pop 2: StatList, VarDeclList
+    //   @MAKE_VARDECL       -> pop 3: DimList, Id, Type
+    //   @MAKE_FPARAM        -> pop 3: DimList, Id, Type
+    //   @MAKE_ASSIGNSTAT    -> pop 2: Expr, Variable
+    //   @MAKE_IFSTAT        -> pop 3: StatBlock (else), StatBlock (then), RelExpr
+    //   @MAKE_WHILESTAT     -> pop 2: StatBlock, RelExpr
+    //   @MAKE_READSTAT      -> pop 1: Variable
+    //   @MAKE_WRITESTAT     -> pop 1: Expr
+    //   @MAKE_RETURNSTAT    -> pop 1: Expr
+    //   @MAKE_RELEXPR       -> pop 3: right ArithExpr, RelOp, left ArithExpr
+    //   @MAKE_ADDNODE       -> pop 3: right Term, AddOp leaf, left Term
+    //   @MAKE_MULTNODE      -> pop 3: right Factor, MultOp leaf, left Factor
+    //   @MAKE_NOT           -> pop 1: Factor -> not(Factor)
+    //   @MAKE_SIGNFACTOR    -> pop 2: Factor, Sign -> sign(Factor)
+    //   @MAKE_VAR           -> pop 2: IndiceList, Id -> var(Id, IndiceList)
+    //   @MAKE_DOT           -> pop 2: right (Var/FuncCall), left -> dot(left, right)
+    //   @MAKE_FUNCCALL      -> pop 2: AParamsList, Id -> funcCall(Id, AParamsList)
+    //
+    // --- Special actions ---
+    //   @PUSH_NULLSCOPE     -> for free functions: pop Id (funcName),
+    //                          push Epsilon (null scope), push Id back
+    //   @RETYPE_TOP_TO_TYPE -> change top-of-stack node type from "Id" to "Type"
+    //                          (used in MEMBERDECL when id is actually a class type)
     //
     // TIP: Build and test incrementally! Start with:
-    //   1. @MAKE_ID, @MAKE_INTNUM, @MAKE_TYPE (leaf nodes)
+    //   1. @MAKE_ID, @MAKE_INTNUM, @MAKE_FLOATNUM, @MAKE_TYPE (leaf nodes)
     //   2. @PUSH_EPSILON, @MAKE_DIMLIST (list handling)
     //   3. @MAKE_VARDECL (first composite)
     //   4. Then add expressions, statements, classes, etc.
@@ -449,4 +492,9 @@ public class Parser {
     public int getErrorCount() {
         return errorCount;
     }
+
+    public ASTNode getAstRoot() {
+        return astRoot;
+    }
+
 }
