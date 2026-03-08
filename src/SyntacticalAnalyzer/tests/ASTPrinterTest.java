@@ -1,7 +1,8 @@
 package src.SyntacticalAnalyzer;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.List;
 
 /**
  * STEP-BY-STEP TESTS FOR A3-03 AND A3-04
@@ -45,7 +46,7 @@ public class ASTPrinterTest {
         // Expected output:
         //   Id | myVar
         try {
-            ASTNode node = ASTNode.makeNode("id", "myVar", 1);
+            ASTNode node = ASTNode.makeNode("Id", "myVar", 1);
             String output = printToString(node);
             String expected = "Id | myVar\n";
             check("Single leaf print", expected.equals(output));
@@ -69,21 +70,17 @@ public class ASTPrinterTest {
      */
     static void testPrintVarDecl() {
         try {
-            ASTNode type = ASTNode.makeNode("type", "integer", 1);
-            ASTNode id = ASTNode.makeNode("id", "x", 1);
-            ASTNode dim = ASTNode.makeNode("intNum", "5", 1);
-            ASTNode dimList = ASTNode.makeFamily("dimList", dim);
-            ASTNode varDecl = ASTNode.makeFamily("varDecl", type, id, dimList);
+            ASTNode type = ASTNode.makeNode("Type", "int", 1);
+            ASTNode id = ASTNode.makeNode("Id", "x", 1);
+            ASTNode dim = ASTNode.makeNode("Dim", "5", 1);
+            ASTNode dimList = ASTNode.makeFamily("DimList", 1, List.of(dim));
+            ASTNode varDecl = ASTNode.makeFamily("VarDecl", 1, List.of(type, id, dimList));
 
             String output = printToString(varDecl);
-            // NOTE: Adjust capitalization to match YOUR node type naming.
-            // The examples use "Type", "Id", "DimList", "Dim", "Num", etc.
-            // If your types are lowercase, adjust expected strings accordingly.
-            // The important thing is the STRUCTURE, not exact capitalization.
             System.out.println("  VarDecl output:\n" + indent(output));
             check("VarDecl - has 5 lines", output.trim().split("\n").length == 5);
-            check("VarDecl - starts with VarDecl/varDecl",
-                    output.toLowerCase().startsWith("vardecl"));
+            check("VarDecl - starts with VarDecl",
+                    output.startsWith("VarDecl"));
         } catch (Exception e) {
             check("VarDecl print threw: " + e.getMessage(), false);
         }
@@ -105,13 +102,13 @@ public class ASTPrinterTest {
      */
     static void testPrintAssignWithExpr() {
         try {
-            ASTNode a = ASTNode.makeNode("id", "a", 1);
-            ASTNode b = ASTNode.makeNode("id", "b", 1);
-            ASTNode c = ASTNode.makeNode("id", "c", 1);
-            ASTNode d = ASTNode.makeNode("id", "d", 1);
-            ASTNode multOp = ASTNode.makeFamily("multOp", c, d);
-            ASTNode addOp = ASTNode.makeFamily("addOp", b, multOp);
-            ASTNode assign = ASTNode.makeFamily("assignStat", a, addOp);
+            ASTNode a = ASTNode.makeNode("Id", "a", 1);
+            ASTNode b = ASTNode.makeNode("Id", "b", 1);
+            ASTNode c = ASTNode.makeNode("Id", "c", 1);
+            ASTNode d = ASTNode.makeNode("Id", "d", 1);
+            ASTNode multOp = ASTNode.makeFamily("MultOp", 1, List.of(c, d));
+            ASTNode addOp = ASTNode.makeFamily("AddOp", 1, List.of(b, multOp));
+            ASTNode assign = ASTNode.makeFamily("AssignStat", 1, List.of(a, addOp));
 
             String output = printToString(assign);
             System.out.println("  AssignStat output:\n" + indent(output));
@@ -131,10 +128,10 @@ public class ASTPrinterTest {
      */
     static void testPrintEmptyProgram() {
         try {
-            ASTNode classList = ASTNode.makeFamily("classList");
-            ASTNode funcDefList = ASTNode.makeFamily("funcDefList");
-            ASTNode programBlock = ASTNode.makeFamily("programBlock");
-            ASTNode prog = ASTNode.makeFamily("prog", classList, funcDefList, programBlock);
+            ASTNode classList = ASTNode.makeFamily("ClassList", 0, List.of());
+            ASTNode funcDefList = ASTNode.makeFamily("FuncDefList", 0, List.of());
+            ASTNode programBlock = ASTNode.makeFamily("ProgramBlock", 0, List.of());
+            ASTNode prog = ASTNode.makeFamily("Prog", 0, List.of(classList, funcDefList, programBlock));
 
             String output = printToString(prog);
             System.out.println("  Empty program output:\n" + indent(output));
@@ -157,11 +154,11 @@ public class ASTPrinterTest {
      *   | FuncDefList
      *   | ProgramBlock
      *   | | VarDecl
-     *   | | | Type | integer
+     *   | | | Type | int
      *   | | | Id | a
      *   | | | DimList
      *   | | VarDecl
-     *   | | | Type | integer
+     *   | | | Type | int
      *   | | | Id | b
      *   | | | DimList
      *   | | AssignStat
@@ -171,31 +168,31 @@ public class ASTPrinterTest {
     static void testPrintProgramWithVarsAndAssign() {
         try {
             // Build VarDecl for "integer a"
-            ASTNode varDecl1 = ASTNode.makeFamily("varDecl",
-                    ASTNode.makeNode("type", "integer", 1),
-                    ASTNode.makeNode("id", "a", 1),
-                    ASTNode.makeFamily("dimList"));
+            ASTNode varDecl1 = ASTNode.makeFamily("VarDecl", 1, List.of(
+                    ASTNode.makeNode("Type", "int", 1),
+                    ASTNode.makeNode("Id", "a", 1),
+                    ASTNode.makeFamily("DimList", 1, List.of())));
 
             // Build VarDecl for "integer b"
-            ASTNode varDecl2 = ASTNode.makeFamily("varDecl",
-                    ASTNode.makeNode("type", "integer", 2),
-                    ASTNode.makeNode("id", "b", 2),
-                    ASTNode.makeFamily("dimList"));
+            ASTNode varDecl2 = ASTNode.makeFamily("VarDecl", 2, List.of(
+                    ASTNode.makeNode("Type", "int", 2),
+                    ASTNode.makeNode("Id", "b", 2),
+                    ASTNode.makeFamily("DimList", 2, List.of())));
 
             // Build AssignStat: a = 1
-            ASTNode assign = ASTNode.makeFamily("assignStat",
-                    ASTNode.makeNode("id", "a", 3),
-                    ASTNode.makeNode("intNum", "1", 3));
+            ASTNode assign = ASTNode.makeFamily("AssignStat", 3, List.of(
+                    ASTNode.makeNode("Id", "a", 3),
+                    ASTNode.makeNode("Num", "1", 3)));
 
             // Build ProgramBlock with the above
-            ASTNode programBlock = ASTNode.makeFamily("programBlock",
-                    varDecl1, varDecl2, assign);
+            ASTNode programBlock = ASTNode.makeFamily("ProgramBlock", 0, List.of(
+                    varDecl1, varDecl2, assign));
 
             // Build full Prog
-            ASTNode prog = ASTNode.makeFamily("prog",
-                    ASTNode.makeFamily("classList"),
-                    ASTNode.makeFamily("funcDefList"),
-                    programBlock);
+            ASTNode prog = ASTNode.makeFamily("Prog", 0, List.of(
+                    ASTNode.makeFamily("ClassList", 0, List.of()),
+                    ASTNode.makeFamily("FuncDefList", 0, List.of()),
+                    programBlock));
 
             String output = printToString(prog);
             System.out.println("  Program with vars output:\n" + indent(output));
@@ -222,11 +219,11 @@ public class ASTPrinterTest {
      */
     static void testPrintNestedExpressions() {
         try {
-            ASTNode a = ASTNode.makeNode("id", "a", 1);
-            ASTNode b = ASTNode.makeNode("id", "b", 1);
-            ASTNode c = ASTNode.makeNode("id", "c", 1);
-            ASTNode mult = ASTNode.makeFamily("multOp", b, c);
-            ASTNode add = ASTNode.makeFamily("addOp", a, mult);
+            ASTNode a = ASTNode.makeNode("Id", "a", 1);
+            ASTNode b = ASTNode.makeNode("Id", "b", 1);
+            ASTNode c = ASTNode.makeNode("Id", "c", 1);
+            ASTNode mult = ASTNode.makeFamily("MultOp", 1, List.of(b, c));
+            ASTNode add = ASTNode.makeFamily("AddOp", 1, List.of(a, mult));
 
             String output = printToString(add);
             System.out.println("  Nested expr output:\n" + indent(output));
@@ -249,19 +246,12 @@ public class ASTPrinterTest {
      *   ASTPrinter.print(root, writer);
      */
     static String printToString(ASTNode root) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        // *** ADAPT THIS LINE TO YOUR API ***
-        // Option A: new ASTPrinter(pw).print(root);
-        // Option B: ASTPrinter.print(root, pw);
-        // Option C: root.accept(new ASTPrinter(pw));
-        throw new UnsupportedOperationException(
-                "TODO: Wire up YOUR ASTPrinter here. " +
-                "Uncomment/adapt one of the options above.");
-
-        // pw.flush();
-        // return sw.toString();
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        new ASTPrinter().visit(root);
+        System.setOut(originalOut);
+        return baos.toString();
     }
 
     static void check(String name, boolean condition) {

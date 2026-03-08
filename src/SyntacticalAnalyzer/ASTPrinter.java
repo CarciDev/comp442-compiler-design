@@ -54,6 +54,24 @@ package src.SyntacticalAnalyzer;
 //
 // =============================================================================
 
-public class ASTPrinter {
+public class ASTPrinter implements Visitor{
     // Implement here
+    public void printNode(ASTNode node,int depth){
+        System.out.print("| ".repeat(depth)+node.getType()); //Printing depth.
+        if(node.getChildren() == null && node.getValue() != null){ //stopping condition - check if node is a leaf.
+            System.out.print(" | "+node.getValue());
+            System.out.println();
+        }else{ //not a leaf, keep printing its children.
+            System.out.println();
+            for(ASTNode child: node.getChildren()){
+                printNode(child,depth+1);
+            }
+        }
+
+    }
+
+    @Override
+    public void visit(ASTNode node) {
+        printNode(node,0);
+    }
 }
