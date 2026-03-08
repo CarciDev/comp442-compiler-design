@@ -138,12 +138,15 @@ public class Parser {
             //   WHICH token was just matched to create the correct AST leaf.
             //
             // =================================================================
-
-            if (isTerminal(top)) {
+            if (top.startsWith("@")) {
+                stack.pop();
+                executeSemanticAction(top);
+            } else if (isTerminal(top)) {
                 // Top is a terminal - try to match with lookahead
                 String lookaheadStr = tokenToGrammarTerminal(lookahead);
                 if (top.equals(lookaheadStr)) {
                     // Match - pop and advance
+                    lastMatchedToken = lookahead;
                     stack.pop();
                     lookahead = nextValidToken();
                 } else {
@@ -196,6 +199,9 @@ public class Parser {
             astRoot = semanticStack.pop();
         }
         return success;
+    }
+
+    private void executeSemanticAction(String top) {
     }
 
     /**
