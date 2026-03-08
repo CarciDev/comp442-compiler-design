@@ -1,7 +1,7 @@
 package src.SyntacticalAnalyzer;
 
 // =============================================================================
-// TODO(A3-03): CREATE THE VISITOR INTERFACE
+// A3-03: CREATE THE VISITOR INTERFACE
 // =============================================================================
 //
 // WHAT: Define a Visitor interface that can traverse the AST tree.
