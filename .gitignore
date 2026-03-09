@@ -28,3 +28,6 @@ replay_pid*
 
 # IDE
 .idea/
+
+# Generated test output
+**/output/

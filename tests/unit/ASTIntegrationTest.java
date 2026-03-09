@@ -14,8 +14,8 @@ import java.io.*;
  *
  * HOW TO RUN:
  *   javac -d out src/LexicalAnalyzer/*.java src/SyntacticalAnalyzer/*.java \
- *                src/SyntacticalAnalyzer/tests/ASTIntegrationTest.java
- *   java -cp out src.SyntacticalAnalyzer.tests.ASTIntegrationTest
+ *                tests/unit/ASTIntegrationTest.java
+ *   java -cp out src.SyntacticalAnalyzer.ASTIntegrationTest
  *
  * Run these tests incrementally as you implement:
  *   1. After A3-05/06/07/08 basic wiring: testMinimalProgram
@@ -30,7 +30,7 @@ public class ASTIntegrationTest {
 
     static int passed = 0;
     static int failed = 0;
-    static final String TEST_DIR = "src/SyntacticalAnalyzer/tests/";
+    static final String TEST_DIR = "tests/testcases/";
 
     public static void main(String[] args) {
         System.out.println("=== A3 Integration Tests: Parse .src -> AST ===\n");
@@ -282,8 +282,7 @@ public class ASTIntegrationTest {
     // =====================================================================
 
     static void testBubblesort() {
-        ASTNode root = parseFile(
-                "../docs_a3/assignment3.COMP442-6421.paquet.2026.4/source files/bubblesort.src");
+        ASTNode root = parseFile("bubblesort.src");
         if (root == null) return;
 
         check("Bubblesort - root is Prog", isType(root, "Prog"));
@@ -296,8 +295,7 @@ public class ASTIntegrationTest {
     }
 
     static void testPolynomial() {
-        ASTNode root = parseFile(
-                "../docs_a3/assignment3.COMP442-6421.paquet.2026.4/source files/polynomial.src");
+        ASTNode root = parseFile("polynomial.src");
         if (root == null) return;
 
         check("Polynomial - root is Prog", isType(root, "Prog"));
