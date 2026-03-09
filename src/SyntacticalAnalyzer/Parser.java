@@ -274,9 +274,9 @@ public class Parser {
 
             // === Composite constructors ===
             case "@MAKE_PROG": {
-                ASTNode funcBody = semanticStack.pop();
-                ASTNode funcDefList = semanticStack.pop();
-                ASTNode classList = semanticStack.pop();
+                ASTNode funcBody = safePop();
+                ASTNode funcDefList = safePop();
+                ASTNode classList = safePop();
                 // Flatten FuncBody(VarDeclList, StatList) into flat ProgramBlock
                 ASTNode progBlock = ASTNode.makeNode("ProgramBlock", 0);
                 if (funcBody.getChildren() != null) {
@@ -293,119 +293,119 @@ public class Parser {
                 break;
             }
             case "@MAKE_CLASSDECL": {
-                ASTNode memberList = semanticStack.pop();
-                ASTNode inheritList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
+                ASTNode memberList = safePop();
+                ASTNode inheritList = safePop();
+                ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("ClassDecl", id.getLineNumber(),
                     Arrays.asList(id, inheritList, memberList)));
                 break;
             }
             case "@MAKE_MEMBERDECL": {
-                ASTNode decl = semanticStack.pop();
-                ASTNode visibility = semanticStack.pop();
+                ASTNode decl = safePop();
+                ASTNode visibility = safePop();
                 semanticStack.push(ASTNode.makeFamily("MemberDecl", visibility.getLineNumber(),
                     Arrays.asList(visibility, decl)));
                 break;
             }
             case "@MAKE_FUNCDECL": {
-                ASTNode returnType = semanticStack.pop();
-                ASTNode fParamsList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
+                ASTNode returnType = safePop();
+                ASTNode fParamsList = safePop();
+                ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncDecl", id.getLineNumber(),
                     Arrays.asList(id, fParamsList, returnType)));
                 break;
             }
             case "@MAKE_FUNCDEF": {
-                ASTNode funcBody = semanticStack.pop();
-                ASTNode funcHead = semanticStack.pop();
+                ASTNode funcBody = safePop();
+                ASTNode funcHead = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncDef", funcHead.getLineNumber(),
                     Arrays.asList(funcHead, funcBody)));
                 break;
             }
             case "@MAKE_FUNCHEAD": {
-                ASTNode returnType = semanticStack.pop();
-                ASTNode fParamsList = semanticStack.pop();
-                ASTNode funcName = semanticStack.pop();
-                ASTNode scopeSpec = semanticStack.pop();
+                ASTNode returnType = safePop();
+                ASTNode fParamsList = safePop();
+                ASTNode funcName = safePop();
+                ASTNode scopeSpec = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncHead", scopeSpec.getLineNumber(),
                     Arrays.asList(scopeSpec, funcName, fParamsList, returnType)));
                 break;
             }
             case "@MAKE_FUNCBODY": {
-                ASTNode statList = semanticStack.pop();
-                ASTNode varDeclList = semanticStack.pop();
+                ASTNode statList = safePop();
+                ASTNode varDeclList = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncBody", 0,
                     Arrays.asList(varDeclList, statList)));
                 break;
             }
             case "@MAKE_VARDECL": {
-                ASTNode dimList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
-                ASTNode type = semanticStack.pop();
+                ASTNode dimList = safePop();
+                ASTNode id = safePop();
+                ASTNode type = safePop();
                 semanticStack.push(ASTNode.makeFamily("VarDecl", type.getLineNumber(),
                     Arrays.asList(type, id, dimList)));
                 break;
             }
             case "@MAKE_FPARAM": {
-                ASTNode dimList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
-                ASTNode type = semanticStack.pop();
+                ASTNode dimList = safePop();
+                ASTNode id = safePop();
+                ASTNode type = safePop();
                 semanticStack.push(ASTNode.makeFamily("FParam", type.getLineNumber(),
                     Arrays.asList(type, id, dimList)));
                 break;
             }
             case "@MAKE_ASSIGNSTAT": {
-                ASTNode expr = semanticStack.pop();
-                ASTNode variable = semanticStack.pop();
+                ASTNode expr = safePop();
+                ASTNode variable = safePop();
                 semanticStack.push(ASTNode.makeFamily("AssignStat", variable.getLineNumber(),
                     Arrays.asList(variable, expr)));
                 break;
             }
             case "@MAKE_IFSTAT": {
-                ASTNode elseBlock = semanticStack.pop();
-                ASTNode thenBlock = semanticStack.pop();
-                ASTNode relExpr = semanticStack.pop();
+                ASTNode elseBlock = safePop();
+                ASTNode thenBlock = safePop();
+                ASTNode relExpr = safePop();
                 semanticStack.push(ASTNode.makeFamily("IfStat", relExpr.getLineNumber(),
                     Arrays.asList(relExpr, thenBlock, elseBlock)));
                 break;
             }
             case "@MAKE_WHILESTAT": {
-                ASTNode statBlock = semanticStack.pop();
-                ASTNode relExpr = semanticStack.pop();
+                ASTNode statBlock = safePop();
+                ASTNode relExpr = safePop();
                 semanticStack.push(ASTNode.makeFamily("WhileStat", relExpr.getLineNumber(),
                     Arrays.asList(relExpr, statBlock)));
                 break;
             }
             case "@MAKE_READSTAT": {
-                ASTNode variable = semanticStack.pop();
+                ASTNode variable = safePop();
                 semanticStack.push(ASTNode.makeFamily("ReadStat", variable.getLineNumber(),
                     Arrays.asList(variable)));
                 break;
             }
             case "@MAKE_WRITESTAT": {
-                ASTNode expr = semanticStack.pop();
+                ASTNode expr = safePop();
                 semanticStack.push(ASTNode.makeFamily("WriteStat", expr.getLineNumber(),
                     Arrays.asList(expr)));
                 break;
             }
             case "@MAKE_RETURNSTAT": {
-                ASTNode expr = semanticStack.pop();
+                ASTNode expr = safePop();
                 semanticStack.push(ASTNode.makeFamily("ReturnStat", expr.getLineNumber(),
                     Arrays.asList(expr)));
                 break;
             }
             case "@MAKE_RELEXPR": {
-                ASTNode right = semanticStack.pop();
-                ASTNode relOp = semanticStack.pop();
-                ASTNode left = semanticStack.pop();
+                ASTNode right = safePop();
+                ASTNode relOp = safePop();
+                ASTNode left = safePop();
                 semanticStack.push(ASTNode.makeFamily("RelExpr", left.getLineNumber(),
                     Arrays.asList(left, relOp, right)));
                 break;
             }
             case "@MAKE_ADDNODE": {
-                ASTNode right = semanticStack.pop();
-                ASTNode op = semanticStack.pop();    // AddOp leaf (+/-/or)
-                ASTNode left = semanticStack.pop();
+                ASTNode right = safePop();
+                ASTNode op = safePop();    // AddOp leaf (+/-/or)
+                ASTNode left = safePop();
                 ASTNode node = ASTNode.makeFamily("AddOp", op.getLineNumber(),
                     Arrays.asList(left, right));
                 node.setValue(op.getValue());         // operator stored in value
@@ -413,9 +413,9 @@ public class Parser {
                 break;
             }
             case "@MAKE_MULTNODE": {
-                ASTNode right = semanticStack.pop();
-                ASTNode op = semanticStack.pop();    // MultOp leaf (*|/|and)
-                ASTNode left = semanticStack.pop();
+                ASTNode right = safePop();
+                ASTNode op = safePop();    // MultOp leaf (*|/|and)
+                ASTNode left = safePop();
                 ASTNode node = ASTNode.makeFamily("MultOp", op.getLineNumber(),
                     Arrays.asList(left, right));
                 node.setValue(op.getValue());
@@ -423,14 +423,14 @@ public class Parser {
                 break;
             }
             case "@MAKE_NOT": {
-                ASTNode factor = semanticStack.pop();
+                ASTNode factor = safePop();
                 semanticStack.push(ASTNode.makeFamily("Not", factor.getLineNumber(),
                     Arrays.asList(factor)));
                 break;
             }
             case "@MAKE_SIGNFACTOR": {
-                ASTNode factor = semanticStack.pop();
-                ASTNode sign = semanticStack.pop();  // Sign leaf (+/-)
+                ASTNode factor = safePop();
+                ASTNode sign = safePop();  // Sign leaf (+/-)
                 ASTNode node = ASTNode.makeFamily("Sign", sign.getLineNumber(),
                     Arrays.asList(factor));
                 node.setValue(sign.getValue());
@@ -438,22 +438,22 @@ public class Parser {
                 break;
             }
             case "@MAKE_VAR": {
-                ASTNode indiceList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
+                ASTNode indiceList = safePop();
+                ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("DataMember", id.getLineNumber(),
                     Arrays.asList(id, indiceList)));
                 break;
             }
             case "@MAKE_DOT": {
-                ASTNode right = semanticStack.pop();
-                ASTNode left = semanticStack.pop();
+                ASTNode right = safePop();
+                ASTNode left = safePop();
                 semanticStack.push(ASTNode.makeFamily("Dot", left.getLineNumber(),
                     Arrays.asList(left, right)));
                 break;
             }
             case "@MAKE_FUNCCALL": {
-                ASTNode aParamsList = semanticStack.pop();
-                ASTNode id = semanticStack.pop();
+                ASTNode aParamsList = safePop();
+                ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncCall", id.getLineNumber(),
                     Arrays.asList(id, aParamsList)));
                 break;
@@ -461,20 +461,33 @@ public class Parser {
 
             // === Special actions ===
             case "@PUSH_NULLSCOPE": {
-                ASTNode funcName = semanticStack.pop();
+                ASTNode funcName = safePop();
                 // Push epsilon scope (composite, not sentinel) then funcName back
                 semanticStack.push(ASTNode.makeNode("Epsilon", funcName.getLineNumber()));
                 semanticStack.push(funcName);
                 break;
             }
             case "@RETYPE_TOP_TO_TYPE": {
-                semanticStack.peek().setType("Type");
+                if (!semanticStack.isEmpty()) {
+                    semanticStack.peek().setType("Type");
+                }
                 break;
             }
             default:
                 reportError("Unknown semantic action: " + action);
                 break;
         }
+    }
+
+    /**
+     * Safe pop from the semantic stack. Returns an error placeholder node
+     * instead of crashing when the stack is empty (e.g., during error recovery).
+     */
+    private ASTNode safePop() {
+        if (semanticStack.isEmpty()) {
+            return ASTNode.makeNode("ErrorNode", 0);
+        }
+        return semanticStack.pop();
     }
 
     private List<ASTNode> popUntilEpsilon() {

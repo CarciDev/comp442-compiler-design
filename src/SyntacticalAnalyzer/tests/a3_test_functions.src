@@ -6,12 +6,12 @@
 add(integer a, integer b) : integer
   do
     return(a + b);
-  end
+  end;
 
 printVal(integer x) : void
   do
     write(x);
-  end
+  end;
 
 main
   local

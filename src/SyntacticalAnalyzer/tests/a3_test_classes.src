@@ -17,7 +17,7 @@ class CIRCLE inherits SHAPE {
 SHAPE::area() : float
   do
     return(0);
-  end
+  end;
 
 CIRCLE::area() : float
   local
@@ -25,12 +25,12 @@ CIRCLE::area() : float
   do
     result = 3.14 * radius * radius;
     return(result);
-  end
+  end;
 
 CIRCLE::setRadius(float r) : void
   do
     radius = r;
-  end
+  end;
 
 main
   local

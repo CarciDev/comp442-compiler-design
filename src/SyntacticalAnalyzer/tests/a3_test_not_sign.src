@@ -8,11 +8,11 @@ main
   do
     a = -5;
     b = +3;
-    if (not(a < b)) then
+    c = not a;
+    if (not a < b) then
       do
         c = -a + b;
       end
     else
       ;
-    ;
   end

@@ -9,7 +9,7 @@ swap(integer arr[], integer i, integer j) : void
     temp = arr[i];
     arr[i] = arr[j];
     arr[j] = temp;
-  end
+  end;
 
 main
   local

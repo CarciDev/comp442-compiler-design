@@ -11,7 +11,7 @@ class POINT {
 POINT::getX() : float
   do
     return(x);
-  end
+  end;
 
 main
   local

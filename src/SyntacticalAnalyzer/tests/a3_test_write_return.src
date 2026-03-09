@@ -9,7 +9,7 @@ f(integer x) : integer
     write(result);
     write(x + 5);
     return(result);
-  end
+  end;
 
 main
   local
