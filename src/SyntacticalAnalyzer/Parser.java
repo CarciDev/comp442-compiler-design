@@ -29,40 +29,10 @@ public class Parser {
     // Parsing stack
     private final Deque<String> stack;
 
-    // =========================================================================
-    // TODO(A3-06): ADD A SEMANTIC STACK
-    // =========================================================================
-    //
-    // WHAT: Add a second stack (Deque<ASTNode>) called "semanticStack" that
-    //       operates alongside the existing parsing stack. This stack holds
-    //       partially-built AST nodes during parsing.
-    //
-    // WHY:  The parsing stack drives syntax analysis (terminals & non-terminals).
-    //       The semantic stack drives AST construction (ASTNode objects).
-    //       They work in tandem: when the parser matches a meaningful terminal
-    //       or processes a semantic action marker, it pushes/pops ASTNodes on
-    //       the semantic stack.
-    //       See: 7.SDTII.pdf slide 3 (architecture diagram with both stacks)
-    //            8.SDTAST.pdf slides 26-31 (stack-based AST generation)
-    //
-    // HOW IT CONNECTS:
-    //   - Semantic action markers in the grammar (A3-05) trigger operations
-    //     on this stack
-    //   - When parsing finishes, the semantic stack should contain exactly
-    //     ONE node: the root "Prog" node = your complete AST
-    //     See: 8.SDTAST.pdf slide 16
-    //
-    // ALSO ADD:
-    //   - A field to store the AST root after parsing (e.g., ASTNode astRoot)
-    //   - A getter method getAST() so the driver can retrieve it
-    //   - Store the most recently matched Token so semantic actions can access
-    //     its lexeme and line number (e.g., Token lastMatchedToken)
-    //
-    // =========================================================================
-
-    private final Deque<ASTNode> semanticStack; //semantic stack
-    private ASTNode astRoot; //root of AST-Tree
-    private Token lastMatchedToken; //to keep track of line number.
+    // A3: Semantic stack and AST root for syntax-directed translation.
+    private final Deque<ASTNode> semanticStack;
+    private ASTNode astRoot;
+    private Token lastMatchedToken;
 
     // Derivation tracking - maintains the current sentential form
     private final List<String> sententialForm;
@@ -101,43 +71,7 @@ public class Parser {
         while (!stack.peek().equals("$")) {
             String top = stack.peek();
 
-            // =================================================================
-            // TODO(A3-07): ADD SEMANTIC ACTION DETECTION (THIRD BRANCH)
-            // =================================================================
-            //
-            // WHAT: Add a check BEFORE the terminal/non-terminal branches:
-            //       if the top of the parsing stack starts with "@", it's a
-            //       semantic action marker — pop it and execute the action.
-            //
-            // WHY:  This is the core mechanism of syntax-directed translation
-            //       in a table-driven parser. Semantic action symbols are
-            //       pushed onto the parsing stack alongside grammar symbols
-            //       (from the augmented rules in A3-05). When they reach the
-            //       top, they trigger AST construction on the semantic stack.
-            //       See: 7.SDTII.pdf slide 4 (the complete algorithm pseudocode)
-            //
-            // PSEUDOCODE (from 7.SDTII.pdf slide 4):
-            //   if top starts with "@":
-            //       stack.pop()
-            //       executeSemanticAction(top)  // see A3-08
-            //   else if isTerminal(top):
-            //       ... existing terminal matching code ...
-            //   else:
-            //       ... existing non-terminal expansion code ...
-            //
-            // IMPORTANT: This branch goes FIRST because "@" symbols are
-            //   neither terminals nor non-terminals. If you don't check for
-            //   them, isTerminal() would return true (since "@MAKE_VARDECL"
-            //   isn't in the parsing table), and the parser would try to
-            //   match it against the input token and fail.
-            //
-            // ALSO: When matching terminals below (the "Match - pop and
-            //   advance" section), save the matched token before advancing:
-            //     lastMatchedToken = lookahead;  // save for semantic actions
-            //   Semantic actions for leaf nodes (like @MAKE_ID) need to know
-            //   WHICH token was just matched to create the correct AST leaf.
-            //
-            // =================================================================
+            // A3: Semantic action markers trigger AST construction on the semantic stack.
             if (top.startsWith("@")) {
                 stack.pop();
                 executeSemanticAction(top);
@@ -201,62 +135,62 @@ public class Parser {
         return success;
     }
 
-    // Sentinel object for @PUSH_EPSILON — identity-compared in popUntilEpsilon.
+    // Epsilon marker object for @PUSH_EPSILON — identity-compared in popUntilEpsilon.
     // Must be distinct from @MAKE_NODE_EPSILON (real AST leaf for unsized dims).
-    private static final ASTNode EPSILON_SENTINEL = ASTNode.makeNode("Epsilon", null, -1);
+    private static final ASTNode EPSILON_MARKER = ASTNode.makeNode("Epsilon", null, -1);
 
     private void executeSemanticAction(String action) {
         switch (action) {
             // === Leaf actions ===
             case "@MAKE_ID":
                 semanticStack.push(ASTNode.makeNode("Id",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_INTNUM":
                 semanticStack.push(ASTNode.makeNode("IntNum",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_FLOATNUM":
                 semanticStack.push(ASTNode.makeNode("FloatNum",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_TYPE":
                 semanticStack.push(ASTNode.makeNode("Type",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_VOID":
                 semanticStack.push(ASTNode.makeNode("Void",
-                    "void", lastMatchedToken.getLine()));
+                        "void", lastMatchedToken.getLine()));
                 break;
             case "@MAKE_VISIBILITY":
                 semanticStack.push(ASTNode.makeNode("Visibility",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_ADDOP":
                 semanticStack.push(ASTNode.makeNode("AddOp",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_MULTOP":
                 semanticStack.push(ASTNode.makeNode("MultOp",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_RELOP":
                 semanticStack.push(ASTNode.makeNode("RelOp",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_SIGN":
                 semanticStack.push(ASTNode.makeNode("Sign",
-                    lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
+                        lastMatchedToken.getLexeme(), lastMatchedToken.getLine()));
                 break;
             case "@MAKE_NODE_EPSILON":
                 // Composite (not leaf) so ASTPrinter won't NPE on null children
                 semanticStack.push(ASTNode.makeNode("Epsilon",
-                    lastMatchedToken != null ? lastMatchedToken.getLine() : 0));
+                        lastMatchedToken != null ? lastMatchedToken.getLine() : 0));
                 break;
 
-            // === Sentinel ===
+            // === Epsilon Marker ===
             case "@PUSH_EPSILON":
-                semanticStack.push(EPSILON_SENTINEL);
+                semanticStack.push(EPSILON_MARKER);
                 break;
 
             // === List constructors (popUntilEpsilon) ===
@@ -289,7 +223,7 @@ public class Parser {
                     }
                 }
                 semanticStack.push(ASTNode.makeFamily("Prog", 0,
-                    Arrays.asList(classList, funcDefList, progBlock)));
+                        Arrays.asList(classList, funcDefList, progBlock)));
                 break;
             }
             case "@MAKE_CLASSDECL": {
@@ -297,14 +231,14 @@ public class Parser {
                 ASTNode inheritList = safePop();
                 ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("ClassDecl", id.getLineNumber(),
-                    Arrays.asList(id, inheritList, memberList)));
+                        Arrays.asList(id, inheritList, memberList)));
                 break;
             }
             case "@MAKE_MEMBERDECL": {
                 ASTNode decl = safePop();
                 ASTNode visibility = safePop();
                 semanticStack.push(ASTNode.makeFamily("MemberDecl", visibility.getLineNumber(),
-                    Arrays.asList(visibility, decl)));
+                        Arrays.asList(visibility, decl)));
                 break;
             }
             case "@MAKE_FUNCDECL": {
@@ -312,14 +246,14 @@ public class Parser {
                 ASTNode fParamsList = safePop();
                 ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncDecl", id.getLineNumber(),
-                    Arrays.asList(id, fParamsList, returnType)));
+                        Arrays.asList(id, fParamsList, returnType)));
                 break;
             }
             case "@MAKE_FUNCDEF": {
                 ASTNode funcBody = safePop();
                 ASTNode funcHead = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncDef", funcHead.getLineNumber(),
-                    Arrays.asList(funcHead, funcBody)));
+                        Arrays.asList(funcHead, funcBody)));
                 break;
             }
             case "@MAKE_FUNCHEAD": {
@@ -328,14 +262,14 @@ public class Parser {
                 ASTNode funcName = safePop();
                 ASTNode scopeSpec = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncHead", scopeSpec.getLineNumber(),
-                    Arrays.asList(scopeSpec, funcName, fParamsList, returnType)));
+                        Arrays.asList(scopeSpec, funcName, fParamsList, returnType)));
                 break;
             }
             case "@MAKE_FUNCBODY": {
                 ASTNode statList = safePop();
                 ASTNode varDeclList = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncBody", 0,
-                    Arrays.asList(varDeclList, statList)));
+                        Arrays.asList(varDeclList, statList)));
                 break;
             }
             case "@MAKE_VARDECL": {
@@ -343,7 +277,7 @@ public class Parser {
                 ASTNode id = safePop();
                 ASTNode type = safePop();
                 semanticStack.push(ASTNode.makeFamily("VarDecl", type.getLineNumber(),
-                    Arrays.asList(type, id, dimList)));
+                        Arrays.asList(type, id, dimList)));
                 break;
             }
             case "@MAKE_FPARAM": {
@@ -351,14 +285,14 @@ public class Parser {
                 ASTNode id = safePop();
                 ASTNode type = safePop();
                 semanticStack.push(ASTNode.makeFamily("FParam", type.getLineNumber(),
-                    Arrays.asList(type, id, dimList)));
+                        Arrays.asList(type, id, dimList)));
                 break;
             }
             case "@MAKE_ASSIGNSTAT": {
                 ASTNode expr = safePop();
                 ASTNode variable = safePop();
                 semanticStack.push(ASTNode.makeFamily("AssignStat", variable.getLineNumber(),
-                    Arrays.asList(variable, expr)));
+                        Arrays.asList(variable, expr)));
                 break;
             }
             case "@MAKE_IFSTAT": {
@@ -366,32 +300,32 @@ public class Parser {
                 ASTNode thenBlock = safePop();
                 ASTNode relExpr = safePop();
                 semanticStack.push(ASTNode.makeFamily("IfStat", relExpr.getLineNumber(),
-                    Arrays.asList(relExpr, thenBlock, elseBlock)));
+                        Arrays.asList(relExpr, thenBlock, elseBlock)));
                 break;
             }
             case "@MAKE_WHILESTAT": {
                 ASTNode statBlock = safePop();
                 ASTNode relExpr = safePop();
                 semanticStack.push(ASTNode.makeFamily("WhileStat", relExpr.getLineNumber(),
-                    Arrays.asList(relExpr, statBlock)));
+                        Arrays.asList(relExpr, statBlock)));
                 break;
             }
             case "@MAKE_READSTAT": {
                 ASTNode variable = safePop();
                 semanticStack.push(ASTNode.makeFamily("ReadStat", variable.getLineNumber(),
-                    Arrays.asList(variable)));
+                        Arrays.asList(variable)));
                 break;
             }
             case "@MAKE_WRITESTAT": {
                 ASTNode expr = safePop();
                 semanticStack.push(ASTNode.makeFamily("WriteStat", expr.getLineNumber(),
-                    Arrays.asList(expr)));
+                        Arrays.asList(expr)));
                 break;
             }
             case "@MAKE_RETURNSTAT": {
                 ASTNode expr = safePop();
                 semanticStack.push(ASTNode.makeFamily("ReturnStat", expr.getLineNumber(),
-                    Arrays.asList(expr)));
+                        Arrays.asList(expr)));
                 break;
             }
             case "@MAKE_RELEXPR": {
@@ -399,7 +333,7 @@ public class Parser {
                 ASTNode relOp = safePop();
                 ASTNode left = safePop();
                 semanticStack.push(ASTNode.makeFamily("RelExpr", left.getLineNumber(),
-                    Arrays.asList(left, relOp, right)));
+                        Arrays.asList(left, relOp, right)));
                 break;
             }
             case "@MAKE_ADDNODE": {
@@ -407,7 +341,7 @@ public class Parser {
                 ASTNode op = safePop();    // AddOp leaf (+/-/or)
                 ASTNode left = safePop();
                 ASTNode node = ASTNode.makeFamily("AddOp", op.getLineNumber(),
-                    Arrays.asList(left, right));
+                        Arrays.asList(left, right));
                 node.setValue(op.getValue());         // operator stored in value
                 semanticStack.push(node);
                 break;
@@ -417,7 +351,7 @@ public class Parser {
                 ASTNode op = safePop();    // MultOp leaf (*|/|and)
                 ASTNode left = safePop();
                 ASTNode node = ASTNode.makeFamily("MultOp", op.getLineNumber(),
-                    Arrays.asList(left, right));
+                        Arrays.asList(left, right));
                 node.setValue(op.getValue());
                 semanticStack.push(node);
                 break;
@@ -425,14 +359,14 @@ public class Parser {
             case "@MAKE_NOT": {
                 ASTNode factor = safePop();
                 semanticStack.push(ASTNode.makeFamily("Not", factor.getLineNumber(),
-                    Arrays.asList(factor)));
+                        Arrays.asList(factor)));
                 break;
             }
             case "@MAKE_SIGNFACTOR": {
                 ASTNode factor = safePop();
                 ASTNode sign = safePop();  // Sign leaf (+/-)
                 ASTNode node = ASTNode.makeFamily("Sign", sign.getLineNumber(),
-                    Arrays.asList(factor));
+                        Arrays.asList(factor));
                 node.setValue(sign.getValue());
                 semanticStack.push(node);
                 break;
@@ -441,28 +375,28 @@ public class Parser {
                 ASTNode indiceList = safePop();
                 ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("DataMember", id.getLineNumber(),
-                    Arrays.asList(id, indiceList)));
+                        Arrays.asList(id, indiceList)));
                 break;
             }
             case "@MAKE_DOT": {
                 ASTNode right = safePop();
                 ASTNode left = safePop();
                 semanticStack.push(ASTNode.makeFamily("Dot", left.getLineNumber(),
-                    Arrays.asList(left, right)));
+                        Arrays.asList(left, right)));
                 break;
             }
             case "@MAKE_FUNCCALL": {
                 ASTNode aParamsList = safePop();
                 ASTNode id = safePop();
                 semanticStack.push(ASTNode.makeFamily("FuncCall", id.getLineNumber(),
-                    Arrays.asList(id, aParamsList)));
+                        Arrays.asList(id, aParamsList)));
                 break;
             }
 
             // === Special actions ===
             case "@PUSH_NULLSCOPE": {
                 ASTNode funcName = safePop();
-                // Push epsilon scope (composite, not sentinel) then funcName back
+                // Push epsilon scope (composite, not epsilon marker) then funcName back
                 semanticStack.push(ASTNode.makeNode("Epsilon", funcName.getLineNumber()));
                 semanticStack.push(funcName);
                 break;
@@ -492,11 +426,11 @@ public class Parser {
 
     private List<ASTNode> popUntilEpsilon() {
         List<ASTNode> nodes = new ArrayList<>();
-        while (!semanticStack.isEmpty() && semanticStack.peek() != EPSILON_SENTINEL) {
+        while (!semanticStack.isEmpty() && semanticStack.peek() != EPSILON_MARKER) {
             nodes.add(semanticStack.pop());
         }
         if (!semanticStack.isEmpty()) {
-            semanticStack.pop(); // pop the sentinel
+            semanticStack.pop(); // pop the epsilon marker
         }
         Collections.reverse(nodes);
         return nodes;
@@ -630,7 +564,7 @@ public class Parser {
     //               break;
     //
     //           case "@PUSH_EPSILON":
-    //               // Push sentinel marker for variable-length lists
+    //               // Push epsilon marker for variable-length lists
     //               semanticStack.push(ASTNode.makeNode("Epsilon"));
     //               break;
     //
@@ -664,7 +598,7 @@ public class Parser {
     //   }
     //
     // HELPER METHOD - popUntilEpsilon():
-    //   Pops ASTNodes from the semantic stack until an epsilon sentinel is
+    //   Pops ASTNodes from the semantic stack until an epsilon marker is
     //   found. Returns the collected nodes in correct order (reversed from
     //   pop order). This handles variable-length constructs like:
     //     - DimList, IndiceList, FParamsList, AParamsList
@@ -690,7 +624,7 @@ public class Parser {
     //   @MAKE_SIGN          -> Sign leaf ("+" or "-")
     //   @MAKE_NODE_EPSILON  -> Epsilon leaf (e.g., unsized array dim [])
     //
-    // --- Sentinel ---
+    // --- Epsilon Marker ---
     //   @PUSH_EPSILON       -> push Epsilon marker for list boundaries
     //
     // --- List constructors (popUntilEpsilon) ---

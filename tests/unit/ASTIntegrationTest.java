@@ -4,28 +4,7 @@ import src.LexicalAnalyzer.LexicalAnalyzer;
 
 import java.io.*;
 
-/**
- * INTEGRATION TESTS FOR A3-05 through A3-09
- * Run after augmenting the grammar and modifying the parser.
- *
- * These tests parse actual .src files through the full pipeline
- * (lexer -> parser with semantic actions -> AST) and verify the
- * AST output has the expected structure.
- *
- * HOW TO RUN:
- *   javac -d out src/LexicalAnalyzer/*.java src/SyntacticalAnalyzer/*.java \
- *                tests/unit/ASTIntegrationTest.java
- *   java -cp out src.SyntacticalAnalyzer.ASTIntegrationTest
- *
- * Run these tests incrementally as you implement:
- *   1. After A3-05/06/07/08 basic wiring: testMinimalProgram
- *   2. After VarDecl actions: testVarDeclarations
- *   3. After expression actions: testSimpleAssignment, testExpressions
- *   4. After statement actions: testWriteReturn, testIfWhile
- *   5. After function actions: testFunctions
- *   6. After class actions: testClasses
- *   7. After all actions: testBubblesort, testPolynomial (full programs)
- */
+/** Integration tests: parse .src files through the full pipeline and verify AST structure. */
 public class ASTIntegrationTest {
 
     static int passed = 0;
@@ -76,9 +55,7 @@ public class ASTIntegrationTest {
         if (failed > 0) System.exit(1);
     }
 
-    // =====================================================================
     // Phase 1: Minimal program
-    // =====================================================================
 
     /**
      * Parse: main do end
@@ -97,9 +74,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_minimal");
     }
 
-    // =====================================================================
     // Phase 2: Variable declarations
-    // =====================================================================
 
     /**
      * Parse: main with local integer x; float y; integer arr[5]; float matrix[3][4];
@@ -132,9 +107,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_vardecl");
     }
 
-    // =====================================================================
     // Phase 3: Assignments and expressions
-    // =====================================================================
 
     static void testSimpleAssignment() {
         ASTNode root = parseFile("a3_test_assign_simple.src");
@@ -182,9 +155,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_expressions");
     }
 
-    // =====================================================================
     // Phase 4: Statements
-    // =====================================================================
 
     static void testWriteReturn() {
         ASTNode root = parseFile("a3_test_write_return.src");
@@ -209,9 +180,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_if_while");
     }
 
-    // =====================================================================
     // Phase 5: Functions
-    // =====================================================================
 
     static void testFunctions() {
         ASTNode root = parseFile("a3_test_functions.src");
@@ -227,9 +196,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_functions");
     }
 
-    // =====================================================================
     // Phase 6: Classes and dot access
-    // =====================================================================
 
     static void testClasses() {
         ASTNode root = parseFile("a3_test_classes.src");
@@ -254,9 +221,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_dot_access");
     }
 
-    // =====================================================================
     // Phase 7: Arrays and unary
-    // =====================================================================
 
     static void testArrays() {
         ASTNode root = parseFile("a3_test_arrays.src");
@@ -277,9 +242,7 @@ public class ASTIntegrationTest {
         printAST(root, "a3_test_not_sign");
     }
 
-    // =====================================================================
     // Phase 8: Full assignment programs
-    // =====================================================================
 
     static void testBubblesort() {
         ASTNode root = parseFile("bubblesort.src");
@@ -307,9 +270,7 @@ public class ASTIntegrationTest {
         printAST(root, "polynomial");
     }
 
-    // =====================================================================
     // Helpers
-    // =====================================================================
 
     /**
      * Parse a .src file and return the AST root.

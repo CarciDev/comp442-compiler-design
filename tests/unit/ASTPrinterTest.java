@@ -4,28 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-/**
- * STEP-BY-STEP TESTS FOR A3-03 AND A3-04
- * Run after implementing Visitor.java and ASTPrinter.java
- *
- * These tests build known ASTs manually, print them using ASTPrinter,
- * and compare the output against expected strings. The expected format
- * matches the assignment examples (example1/2/3.ast.outast).
- *
- * HOW TO RUN:
- *   javac -d out src/SyntacticalAnalyzer/ASTNode.java \
- *                src/SyntacticalAnalyzer/Visitor.java \
- *                src/SyntacticalAnalyzer/ASTPrinter.java \
- *                src/SyntacticalAnalyzer/tests/ASTPrinterTest.java
- *   java -cp out src.SyntacticalAnalyzer.tests.ASTPrinterTest
- */
+/** Unit tests for ASTPrinter output format. */
 public class ASTPrinterTest {
 
     static int passed = 0;
     static int failed = 0;
 
     public static void main(String[] args) {
-        System.out.println("=== A3-03/04: Visitor & ASTPrinter Tests ===\n");
+        System.out.println("=== Visitor & ASTPrinter Tests ===\n");
         testPrintSingleLeaf();
         testPrintVarDecl();
         testPrintAssignWithExpr();
@@ -37,9 +23,7 @@ public class ASTPrinterTest {
         if (failed > 0) System.exit(1);
     }
 
-    // =====================================================================
-    // A3-03/04 TESTS: AST Printing
-    // =====================================================================
+    // AST Printing Tests
 
     /** Test: Print a single leaf node */
     static void testPrintSingleLeaf() {
@@ -233,18 +217,9 @@ public class ASTPrinterTest {
         }
     }
 
-    // =====================================================================
     // Helpers
-    // =====================================================================
 
-    /**
-     * Uses YOUR ASTPrinter to print the AST to a string.
-     * ADAPT THIS METHOD to match your ASTPrinter API.
-     * For example, if your ASTPrinter takes a PrintWriter:
-     *   new ASTPrinter(writer).print(root);
-     * Or if it's a static method:
-     *   ASTPrinter.print(root, writer);
-     */
+    /** Captures ASTPrinter output to a string for assertion. */
     static String printToString(ASTNode root) {
         PrintStream originalOut = System.out;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

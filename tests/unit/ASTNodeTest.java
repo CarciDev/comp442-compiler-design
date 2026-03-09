@@ -2,32 +2,19 @@ package src.SyntacticalAnalyzer;
 
 import java.util.List;
 
-/**
- * STEP-BY-STEP TESTS FOR A3-01 AND A3-02
- * Run after implementing ASTNode.java
- *
- * These tests verify you can create leaf nodes, composite nodes,
- * and build tree structures using makeNode, makeFamily, makeSiblings,
- * adoptChildren, and the epsilon/popUntilEpsilon pattern.
- *
- * HOW TO RUN:
- *   javac -d out src/SyntacticalAnalyzer/ASTNode.java src/SyntacticalAnalyzer/tests/ASTNodeTest.java
- *   java -cp out src.SyntacticalAnalyzer.tests.ASTNodeTest
- *
- * Each test prints PASS or FAIL. Fix failures before moving on.
- */
+/** Unit tests for ASTNode creation and tree-building methods. */
 public class ASTNodeTest {
 
     static int passed = 0;
     static int failed = 0;
 
     public static void main(String[] args) {
-        System.out.println("=== A3-01: ASTNode Creation Tests ===\n");
+        System.out.println("=== ASTNode Creation Tests ===\n");
         testLeafNodeCreation();
         testCompositeNodeCreation();
         testEpsilonNode();
 
-        System.out.println("\n=== A3-02: Tree-Building Method Tests ===\n");
+        System.out.println("\n=== Tree-Building Method Tests ===\n");
         testAdoptChildren();
         testMakeSiblings();
         testMakeFamily();
@@ -40,17 +27,10 @@ public class ASTNodeTest {
         if (failed > 0) System.exit(1);
     }
 
-    // =====================================================================
-    // A3-01 TESTS: Node Creation
-    // =====================================================================
+    // Node Creation Tests
 
     /** Test: Create leaf nodes (Id, Num, Type) with values */
     static void testLeafNodeCreation() {
-        // After A3-01, you should be able to create leaf nodes like:
-        //   ASTNode idNode = ASTNode.makeNode("Id", "myVar", 5);
-        //   ASTNode numNode = ASTNode.makeNode("Num", "42", 3);
-        //   ASTNode typeNode = ASTNode.makeNode("Type", "int", 1);
-        //
         // Verify:
         //   - node.getType() returns the type string
         //   - node.getValue() returns the value string
@@ -102,9 +82,7 @@ public class ASTNodeTest {
         }
     }
 
-    // =====================================================================
-    // A3-02 TESTS: Tree-Building Methods
-    // =====================================================================
+    // Tree-Building Method Tests
 
     /** Test: adoptChildren makes nodes children of a parent */
     static void testAdoptChildren() {
