@@ -1,0 +1,41 @@
+// A3 TEST: Class declarations with members and inheritance
+// Tests: ClassDecl -> Id, InherList, MembList
+//        Visibility (public/private)
+//        MembDecl (VarDecl, FuncDecl)
+// Inspired by polynomial.src
+class SHAPE {
+	public area() : float;
+};
+
+class CIRCLE inherits SHAPE {
+	private float radius;
+
+	public area() : float;
+	public setRadius(float r) : void;
+};
+
+SHAPE::area() : float
+  do
+    return(0);
+  end;
+
+CIRCLE::area() : float
+  local
+    float result;
+  do
+    result = 3.14 * radius * radius;
+    return(result);
+  end;
+
+CIRCLE::setRadius(float r) : void
+  do
+    radius = r;
+  end;
+
+main
+  local
+    CIRCLE c;
+  do
+    c.setRadius(5.0);
+    write(c.area());
+  end

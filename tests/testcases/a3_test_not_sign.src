@@ -1,0 +1,18 @@
+// A3 TEST: Unary operators (not, sign)
+// Tests: Not -> factor, Sign -> factor
+main
+  local
+    integer a;
+    integer b;
+    integer c;
+  do
+    a = -5;
+    b = +3;
+    c = not a;
+    if (not a < b) then
+      do
+        c = -a + b;
+      end
+    else
+      ;
+  end

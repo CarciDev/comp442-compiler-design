@@ -1,0 +1,6 @@
+// A3 TEST: Minimal program - just main with empty body
+// Tests: Prog -> ClassList (empty), FuncDefList (empty), ProgramBlock (empty)
+// Use after: A3-05/06/07/08 (basic parser integration)
+main
+  do
+  end

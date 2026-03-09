@@ -1,0 +1,28 @@
+// A3 TEST: If-then-else and while statements
+// Tests: IfStat -> relExpr, statBlock, statBlock
+//        WhileStat -> relExpr, statBlock
+//        RelExpr with relational operators
+main
+  local
+    integer i;
+    integer n;
+  do
+    i = 0;
+    n = 10;
+
+    if (i < n) then
+      do
+        write(i);
+      end
+    else
+      do
+        write(n);
+      end
+    ;
+
+    while (i < n)
+      do
+        i = i + 1;
+      end
+    ;
+  end
