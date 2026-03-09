@@ -1,7 +1,7 @@
 package src.SyntacticalAnalyzer;
 
 // =============================================================================
-// TODO(A3-04): IMPLEMENT THE AST PRINTER (TEXT FORMAT -> .outast)
+// (A3-04): IMPLEMENT THE AST PRINTER (TEXT FORMAT -> .outast)
 // =============================================================================
 //
 // WHAT: A Visitor implementation that traverses the AST and outputs it in
@@ -55,7 +55,6 @@ package src.SyntacticalAnalyzer;
 // =============================================================================
 
 public class ASTPrinter implements Visitor{
-    // Implement here
     public void printNode(ASTNode node,int depth){
         System.out.print("| ".repeat(depth)+node.getType()); //Printing depth.
         if(node.getChildren() == null && node.getValue() != null){ //stopping condition - check if node is a leaf.

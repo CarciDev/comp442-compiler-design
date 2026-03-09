@@ -89,10 +89,10 @@ public class ASTIntegrationTest {
         ASTNode root = parseFile("a3_test_minimal.src");
         if (root == null) return;
 
-        check("Minimal - root is prog", isType(root, "prog"));
+        check("Minimal - root is Prog", isType(root, "Prog"));
         check("Minimal - 3 children", root.getChildren().size() == 3);
-        check("Minimal - classList empty", root.getChildren().get(0).getChildren().isEmpty());
-        check("Minimal - funcDefList empty", root.getChildren().get(1).getChildren().isEmpty());
+        check("Minimal - ClassList empty", root.getChildren().get(0).getChildren().isEmpty());
+        check("Minimal - FuncDefList empty", root.getChildren().get(1).getChildren().isEmpty());
 
         printAST(root, "a3_test_minimal");
     }
@@ -114,7 +114,7 @@ public class ASTIntegrationTest {
 
         // First vardecl: integer x (no dims)
         ASTNode vd1 = progBlock.getChildren().get(0);
-        check("VarDecl1 - is varDecl", isType(vd1, "varDecl"));
+        check("VarDecl1 - is VarDecl", isType(vd1, "VarDecl"));
         check("VarDecl1 - has 3 children", vd1.getChildren().size() == 3);
         check("VarDecl1 - type is integer", hasValue(vd1.getChildren().get(0), "integer"));
         check("VarDecl1 - id is x", hasValue(vd1.getChildren().get(1), "x"));
@@ -146,8 +146,11 @@ public class ASTIntegrationTest {
 
         // First assign: a = 1
         ASTNode assign1 = progBlock.getChildren().get(2);
-        check("Assign1 - is assignStat", isType(assign1, "assignStat"));
-        check("Assign1 - LHS is a", hasValue(assign1.getChildren().get(0), "a"));
+        check("Assign1 - is AssignStat", isType(assign1, "AssignStat"));
+        // LHS is DataMember(Id("a"), IndiceList()) — check the Id inside it
+        ASTNode lhs = assign1.getChildren().get(0);
+        check("Assign1 - LHS is DataMember", isType(lhs, "DataMember"));
+        check("Assign1 - LHS id is a", hasValue(lhs.getChildren().get(0), "a"));
         check("Assign1 - RHS is 1", hasValue(assign1.getChildren().get(1), "1"));
 
         printAST(root, "a3_test_assign_simple");
@@ -167,15 +170,14 @@ public class ASTIntegrationTest {
 
         // Third assign: a = b + c * d (index 6, after 4 vardecls + 2 assigns)
         ASTNode assign3 = progBlock.getChildren().get(6);
-        check("Expr3 - is assignStat", isType(assign3, "assignStat"));
+        check("Expr3 - is AssignStat", isType(assign3, "AssignStat"));
 
         ASTNode rhs = assign3.getChildren().get(1);
-        check("Expr3 - RHS is addOp", isType(rhs, "addOp"));
+        check("Expr3 - RHS is AddOp", isType(rhs, "AddOp"));
         // AddOp's right child should be MultOp (b + (c*d))
-        // The exact structure depends on whether you include operator leaf nodes
-        // At minimum, verify addOp exists with nested multOp
-        boolean hasNestedMult = containsType(rhs, "multOp");
-        check("Expr3 - contains nested multOp (precedence)", hasNestedMult);
+        // At minimum, verify AddOp exists with nested MultOp
+        boolean hasNestedMult = containsType(rhs, "MultOp");
+        check("Expr3 - contains nested MultOp (precedence)", hasNestedMult);
 
         printAST(root, "a3_test_expressions");
     }
@@ -188,7 +190,7 @@ public class ASTIntegrationTest {
         ASTNode root = parseFile("a3_test_write_return.src");
         if (root == null) return;
 
-        check("WriteReturn - root is prog", isType(root, "prog"));
+        check("WriteReturn - root is Prog", isType(root, "Prog"));
         // Should have 1 funcDef + main block
         check("WriteReturn - has funcDef", root.getChildren().get(1).getChildren().size() >= 1);
 
@@ -201,8 +203,8 @@ public class ASTIntegrationTest {
 
         ASTNode progBlock = root.getChildren().get(2);
         // Check for ifStat and whileStat nodes somewhere in the tree
-        check("IfWhile - contains ifStat", containsType(progBlock, "ifStat"));
-        check("IfWhile - contains whileStat", containsType(progBlock, "whileStat"));
+        check("IfWhile - contains IfStat", containsType(progBlock, "IfStat"));
+        check("IfWhile - contains WhileStat", containsType(progBlock, "WhileStat"));
 
         printAST(root, "a3_test_if_while");
     }
@@ -216,11 +218,11 @@ public class ASTIntegrationTest {
         if (root == null) return;
 
         ASTNode funcDefList = root.getChildren().get(1);
-        check("Functions - 2 funcDefs", funcDefList.getChildren().size() == 2);
+        check("Functions - 2 FuncDefs", funcDefList.getChildren().size() == 2);
 
         // First function: add(integer a, integer b) : integer
         ASTNode funcDef1 = funcDefList.getChildren().get(0);
-        check("FuncDef1 - is funcDef", isType(funcDef1, "funcDef"));
+        check("FuncDef1 - is FuncDef", isType(funcDef1, "FuncDef"));
 
         printAST(root, "a3_test_functions");
     }
@@ -234,7 +236,7 @@ public class ASTIntegrationTest {
         if (root == null) return;
 
         ASTNode classList = root.getChildren().get(0);
-        check("Classes - 2 class decls", classList.getChildren().size() == 2);
+        check("Classes - 2 Class nodes", classList.getChildren().size() == 2);
 
         printAST(root, "a3_test_classes");
     }
@@ -245,9 +247,9 @@ public class ASTIntegrationTest {
 
         ASTNode progBlock = root.getChildren().get(2);
         // Should contain dot access nodes
-        check("DotAccess - contains dot/dataMember", containsType(progBlock, "dot")
-                || containsType(progBlock, "dataMember")
-                || containsType(progBlock, "fCall"));
+        check("DotAccess - contains Dot/DataMember", containsType(progBlock, "Dot")
+                || containsType(progBlock, "DataMember")
+                || containsType(progBlock, "FuncCall"));
 
         printAST(root, "a3_test_dot_access");
     }
@@ -269,8 +271,8 @@ public class ASTIntegrationTest {
         if (root == null) return;
 
         ASTNode progBlock = root.getChildren().get(2);
-        check("NotSign - contains sign or not",
-                containsType(progBlock, "sign") || containsType(progBlock, "not"));
+        check("NotSign - contains Sign or Not",
+                containsType(progBlock, "Sign") || containsType(progBlock, "Not"));
 
         printAST(root, "a3_test_not_sign");
     }
@@ -284,7 +286,7 @@ public class ASTIntegrationTest {
                 "../docs_a3/assignment3.COMP442-6421.paquet.2026.4/source files/bubblesort.src");
         if (root == null) return;
 
-        check("Bubblesort - root is prog", isType(root, "prog"));
+        check("Bubblesort - root is Prog", isType(root, "Prog"));
         check("Bubblesort - has funcDefs",
                 root.getChildren().get(1).getChildren().size() >= 2);
         check("Bubblesort - programBlock not empty",
@@ -298,7 +300,7 @@ public class ASTIntegrationTest {
                 "../docs_a3/assignment3.COMP442-6421.paquet.2026.4/source files/polynomial.src");
         if (root == null) return;
 
-        check("Polynomial - root is prog", isType(root, "prog"));
+        check("Polynomial - root is Prog", isType(root, "Prog"));
         check("Polynomial - has classes",
                 !root.getChildren().get(0).getChildren().isEmpty());
         check("Polynomial - has funcDefs",
@@ -326,11 +328,7 @@ public class ASTIntegrationTest {
             Parser parser = new Parser(lexer, nullWriter, nullWriter);
             parser.parse();
 
-            // *** ADAPT THIS: call your method to retrieve the AST ***
-            // ASTNode root = parser.getAST();
-            // return root;
-            throw new UnsupportedOperationException(
-                    "TODO: Uncomment parser.getAST() after implementing A3-06");
+            return parser.getAstRoot();
 
         } catch (UnsupportedOperationException e) {
             check("Parse " + filename + " - NOT YET IMPLEMENTED (" + e.getMessage() + ")", false);
@@ -354,9 +352,17 @@ public class ASTIntegrationTest {
             String outPath = new File(outputDir, testName + ".outast").getPath();
             PrintWriter pw = new PrintWriter(new FileWriter(outPath));
 
-            // *** ADAPT THIS to your ASTPrinter API ***
-            // new ASTPrinter(pw).print(root);
-            // OR: ASTPrinter.print(root, pw);
+            ASTPrinter printer = new ASTPrinter();
+            // Redirect System.out to the file writer
+            PrintStream oldOut = System.out;
+            System.setOut(new PrintStream(new OutputStream() {
+                public void write(int b) throws IOException { pw.write(b); }
+                public void write(byte[] b, int off, int len) throws IOException {
+                    pw.write(new String(b, off, len));
+                }
+            }));
+            root.accept(printer);
+            System.setOut(oldOut);
 
             pw.close();
             System.out.println("  -> Wrote: " + outPath);
@@ -377,6 +383,7 @@ public class ASTIntegrationTest {
     static boolean containsType(ASTNode node, String type) {
         if (node == null) return false;
         if (type.equalsIgnoreCase(node.getType())) return true;
+        if (node.getChildren() == null) return false;
         for (ASTNode child : node.getChildren()) {
             if (containsType(child, type)) return true;
         }
