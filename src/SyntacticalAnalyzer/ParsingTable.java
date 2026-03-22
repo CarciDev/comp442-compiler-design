@@ -5,72 +5,212 @@ import java.util.*;
 
 public class ParsingTable {
 
-    // All grammar rules indexed by number
+    // A3: Grammar rules augmented with @SEMANTIC_ACTION markers for AST generation.
+    // Actions are dispatched by the parser's semantic stack when popped from the parsing stack.
     public static final String[][] rules = {
-            /*   0 */ {"ADDOP", "plus"},
-            /*   1 */ {"ADDOP", "minus"},
-            /*   2 */ {"ADDOP", "or"},
-            /*   3 */ {"APARAMS", "EXPR REPTAPARAMS1"},
-            /*   4 */ {"APARAMS", "EPSILON"},
-            /*   5 */ {"APARAMSTAIL", "comma EXPR"},
+
+            // ===================== OPERATORS & SIGNS =====================
+            // Each operator terminal creates a leaf node for use by
+            // @MAKE_ADDNODE / @MAKE_MULTNODE / @MAKE_RELEXPR later.
+
+            /*   0 */ {"ADDOP", "plus @MAKE_ADDOP"},
+            /*   1 */ {"ADDOP", "minus @MAKE_ADDOP"},
+            /*   2 */ {"ADDOP", "or @MAKE_ADDOP"},
+
+            // ===================== ACTUAL PARAMETERS =====================
+            // Epsilon marker before first expr; each EXPR pushed between epsilon marker
+            // and @MAKE_APARAMSLIST. APARAMSTAIL just pushes more EXPRs.
+
+            /*   3 */ {"APARAMS", "@PUSH_EPSILON EXPR REPTAPARAMS1 @MAKE_APARAMSLIST"},
+            /*   4 */ {"APARAMS", "@PUSH_EPSILON @MAKE_APARAMSLIST"},  // empty params
+            /*   5 */ {"APARAMSTAIL", "comma EXPR"},                   // pushes one more expr
+
+            // ===================== ARITHMETIC EXPRESSION =================
+            // Left-recursion eliminated: TERM stays on stack as "left operand".
+            // Each RIGHTRECARITHEXPR iteration pops left+op+right via @MAKE_ADDNODE
+            // and pushes the result back as the new left operand.
+            //
+            // Example: a + b - c
+            //   TERM(a) -> push a
+            //   ADDOP(+) -> push addOp(+);  TERM(b) -> push b
+            //   @MAKE_ADDNODE -> pop b, +, a -> push addNode(+, a, b)
+            //   ADDOP(-) -> push addOp(-);  TERM(c) -> push c
+            //   @MAKE_ADDNODE -> pop c, -, addNode(+,a,b) -> push addNode(-, addNode(+,a,b), c)
+            //   EPSILON -> done.  Result: left-associative tree.
+
             /*   6 */ {"ARITHEXPR", "TERM RIGHTRECARITHEXPR"},
+
+            // ===================== ARRAY SIZE ============================
+            // Each ARRAYSIZE pushes one node (intNum or epsilon for [])
+            // onto the stack. Collected later by @MAKE_DIMLIST.
+
             /*   7 */ {"ARRAYSIZE", "lsqbr ARRAYSIZE2"},
-            /*   8 */ {"ARRAYSIZE2", "intnum rsqbr"},
-            /*   9 */ {"ARRAYSIZE2", "rsqbr"},
-            /*  10 */ {"ASSIGNOP", "assign"},
-            /*  11 */ {"CLASSDECL", "class id OPTCLASSDECL2 lcurbr REPTCLASSDECL4 rcurbr semi"},
+            /*   8 */ {"ARRAYSIZE2", "intnum @MAKE_INTNUM rsqbr"},       // sized: [2]
+            /*   9 */ {"ARRAYSIZE2", "rsqbr @MAKE_NODE_EPSILON"},        // unsized: []
+
+            /*  10 */ {"ASSIGNOP", "assign"},  // not used directly in AST; assignment handled in STMTIDNEST
+
+            // ===================== CLASS DECLARATION =====================
+            // class id OPTCLASSDECL2 { members } ;
+            //   @MAKE_ID          -> push className
+            //   OPTCLASSDECL2     -> push inheritList (even if empty)
+            //   @PUSH_EPSILON    -> epsilon marker for member list
+            //   REPTCLASSDECL4    -> pushes memberDecl nodes
+            //   @MAKE_MEMBERLIST  -> pop until epsilon -> memberList
+            //   @MAKE_CLASSDECL   -> pop 3: name, inheritList, memberList
+
+            /*  11 */ {"CLASSDECL", "class id @MAKE_ID OPTCLASSDECL2 lcurbr @PUSH_EPSILON REPTCLASSDECL4 @MAKE_MEMBERLIST rcurbr semi @MAKE_CLASSDECL"},
+
+            // ===================== EXPRESSION ============================
+            // EXPR -> ARITHEXPR EXPR2
+            // If EXPR2 has a RELOP, creates relExpr. Otherwise arithExpr passes through.
+
             /*  12 */ {"EXPR", "ARITHEXPR EXPR2"},
-            /*  13 */ {"EXPR2", "RELOP ARITHEXPR"},
-            /*  14 */ {"EXPR2", "EPSILON"},
-            /*  15 */ {"FACTOR", "id FACTOR2 REPTVARIABLEORFUNCTIONCALL"},
-            /*  16 */ {"FACTOR", "intnum"},
-            /*  17 */ {"FACTOR", "floatnum"},
-            /*  18 */ {"FACTOR", "lpar ARITHEXPR rpar"},
-            /*  19 */ {"FACTOR", "not FACTOR"},
-            /*  20 */ {"FACTOR", "SIGN FACTOR"},
-            /*  21 */ {"FACTOR2", "lpar APARAMS rpar"},
-            /*  22 */ {"FACTOR2", "REPTIDNEST1"},
-            /*  23 */ {"FPARAMS", "TYPE id REPTFPARAMS2 REPTFPARAMS3"},
-            /*  24 */ {"FPARAMS", "EPSILON"},
-            /*  25 */ {"FPARAMSTAIL", "comma TYPE id REPTFPARAMSTAIL3"},
-            /*  26 */ {"FUNCBODY", "OPTFUNCBODY0 do REPTFUNCBODY2 end"},
-            /*  27 */ {"FUNCDECL", "id lpar FPARAMS rpar colon FUNCDECL2"},
-            /*  28 */ {"FUNCDECL2", "TYPE semi"},
-            /*  29 */ {"FUNCDECL2", "void semi"},
-            /*  30 */ {"FUNCDEF", "FUNCHEAD FUNCBODY semi"},
-            /*  31 */ {"FUNCHEAD", "id FUNCHEAD1"},
-            /*  32 */ {"FUNCHEAD1", "coloncolon id lpar FPARAMS rpar colon FUNCHEAD2"},
-            /*  33 */ {"FUNCHEAD1", "lpar FPARAMS rpar colon FUNCHEAD2"},
-            /*  34 */ {"FUNCHEAD2", "TYPE"},
-            /*  35 */ {"FUNCHEAD2", "void"},
-            /*  36 */ {"IDNEST", "dot id IDNEST2"},
-            /*  37 */ {"IDNEST2", "lpar APARAMS rpar"},
-            /*  38 */ {"IDNEST2", "REPTIDNEST1"},
-            /*  39 */ {"INDICE", "lsqbr ARITHEXPR rsqbr"},
-            /*  40 */ {"MEMBERDECL", "id MEMBERDECL2"},
-            /*  41 */ {"MEMBERDECL", "float id REPTVARDECL2 semi"},
-            /*  42 */ {"MEMBERDECL", "integer id REPTVARDECL2 semi"},
-            /*  43 */ {"MEMBERDECL2", "lpar FPARAMS rpar colon FUNCDECL2"},
-            /*  44 */ {"MEMBERDECL2", "id REPTVARDECL2 semi"},
-            /*  45 */ {"MULTOP", "mult"},
-            /*  46 */ {"MULTOP", "div"},
-            /*  47 */ {"MULTOP", "and"},
-            /*  48 */ {"OPTCLASSDECL2", "inherits id REPTOPTCLASSDECL22"},
-            /*  49 */ {"OPTCLASSDECL2", "EPSILON"},
-            /*  50 */ {"OPTFUNCBODY0", "local REPTOPTFUNCBODY01"},
-            /*  51 */ {"OPTFUNCBODY0", "EPSILON"},
-            /*  52 */ {"PROG", "REPTPROG0 REPTPROG1 main FUNCBODY"},
-            /*  53 */ {"RELEXPR", "ARITHEXPR RELOP ARITHEXPR"},
-            /*  54 */ {"RELOP", "eq"},
-            /*  55 */ {"RELOP", "neq"},
-            /*  56 */ {"RELOP", "lt"},
-            /*  57 */ {"RELOP", "gt"},
-            /*  58 */ {"RELOP", "leq"},
-            /*  59 */ {"RELOP", "geq"},
+            /*  13 */ {"EXPR2", "RELOP ARITHEXPR @MAKE_RELEXPR"},  // pop right, relOp, left -> relExpr
+            /*  14 */ {"EXPR2", "EPSILON"},                        // arithExpr passes through
+
+            // ===================== FACTOR ================================
+            // Starting with id: FACTOR2 decides variable vs function call,
+            // REPTVARIABLEORFUNCTIONCALL adds dot-chain continuation.
+
+            /*  15 */ {"FACTOR", "id @MAKE_ID FACTOR2 REPTVARIABLEORFUNCTIONCALL"},
+            /*  16 */ {"FACTOR", "intnum @MAKE_INTNUM"},
+            /*  17 */ {"FACTOR", "floatnum @MAKE_FLOATNUM"},
+            /*  18 */ {"FACTOR", "lpar ARITHEXPR rpar"},           // parenthesized: subtree passes through
+            /*  19 */ {"FACTOR", "not FACTOR @MAKE_NOT"},          // pop factor -> not(factor)
+            /*  20 */ {"FACTOR", "SIGN FACTOR @MAKE_SIGNFACTOR"},  // pop factor, sign -> sign(factor)
+
+            // FACTOR2: determines if id is function call or variable
+            //   Rule 21: id(...) -> function call
+            //   Rule 22: id[i][j] -> variable with indices
+
+            /*  21 */ {"FACTOR2", "lpar APARAMS rpar @MAKE_FUNCCALL"},                       // pop aParams, id -> funcCall
+            /*  22 */ {"FACTOR2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR"},  // pop indiceList, id -> var
+
+            // ===================== FORMAL PARAMETERS =====================
+            // Outer epsilon marker for the fParamsList. First param built inline,
+            // additional params via FPARAMSTAIL (each pushes one fParam).
+            //
+            // Rule 23 trace: @PUSH_EPSILON(list) TYPE id @MAKE_ID
+            //   @PUSH_EPSILON(dims) REPTFPARAMS2 @MAKE_DIMLIST @MAKE_FPARAM
+            //   REPTFPARAMS3(more fParams) @MAKE_FPARAMSLIST
+
+            /*  23 */ {"FPARAMS", "@PUSH_EPSILON TYPE id @MAKE_ID @PUSH_EPSILON REPTFPARAMS2 @MAKE_DIMLIST @MAKE_FPARAM REPTFPARAMS3 @MAKE_FPARAMSLIST"},
+            /*  24 */ {"FPARAMS", "@PUSH_EPSILON @MAKE_FPARAMSLIST"},  // empty param list
+            /*  25 */ {"FPARAMSTAIL", "comma TYPE id @MAKE_ID @PUSH_EPSILON REPTFPARAMSTAIL3 @MAKE_DIMLIST @MAKE_FPARAM"},
+
+            // ===================== FUNCTION BODY =========================
+            // OPTFUNCBODY0 pushes varDeclList (even if empty).
+            // REPTFUNCBODY2 collects statements between epsilon marker and @MAKE_STATLIST.
+            // @MAKE_FUNCBODY pops statList and varDeclList.
+
+            /*  26 */ {"FUNCBODY", "OPTFUNCBODY0 do @PUSH_EPSILON REPTFUNCBODY2 @MAKE_STATLIST end @MAKE_FUNCBODY"},
+
+            // ===================== FUNCTION DECLARATION (in class) =======
+            // Used standalone and via MEMBERDECL2 rule 43.
+
+            /*  27 */ {"FUNCDECL", "id @MAKE_ID lpar FPARAMS rpar colon FUNCDECL2 @MAKE_FUNCDECL"},
+            /*  28 */ {"FUNCDECL2", "TYPE semi"},          // TYPE pushes type leaf via @MAKE_TYPE
+            /*  29 */ {"FUNCDECL2", "void @MAKE_VOID semi"},
+
+            // ===================== FUNCTION DEFINITION ====================
+            // FUNCHEAD pushes funcHead subtree, FUNCBODY pushes funcBody subtree.
+
+            /*  30 */ {"FUNCDEF", "FUNCHEAD FUNCBODY semi @MAKE_FUNCDEF"},
+
+            // ===================== FUNCTION HEAD ==========================
+            // Rule 31 pushes the first id. FUNCHEAD1 determines if scoped.
+            //
+            // Rule 32 (member fn): id1 = scope (already on stack), id2 = funcName
+            //   coloncolon id @MAKE_ID lpar FPARAMS rpar colon FUNCHEAD2 @MAKE_FUNCHEAD
+            //   Stack: [scope, funcName, fParamsList, returnType] -> pop 4
+            //
+            // Rule 33 (free fn): id = funcName (already on stack), no scope
+            //   @PUSH_NULLSCOPE swaps: pop funcName, push epsilon, push funcName
+            //   Stack: [epsilon, funcName, fParamsList, returnType] -> pop 4
+
+            /*  31 */ {"FUNCHEAD", "id @MAKE_ID FUNCHEAD1"},
+            /*  32 */ {"FUNCHEAD1", "coloncolon id @MAKE_ID lpar FPARAMS rpar colon FUNCHEAD2 @MAKE_FUNCHEAD"},
+            /*  33 */ {"FUNCHEAD1", "@PUSH_NULLSCOPE lpar FPARAMS rpar colon FUNCHEAD2 @MAKE_FUNCHEAD"},
+            /*  34 */ {"FUNCHEAD2", "TYPE"},               // TYPE pushes return type leaf
+            /*  35 */ {"FUNCHEAD2", "void @MAKE_VOID"},    // push void return type
+
+            // ===================== IDNEST (dot chain in expressions) ======
+            // Used by REPTVARIABLEORFUNCTIONCALL to extend a factor's dot chain.
+            // After IDNEST2, @MAKE_DOT combines new var/funcCall with previous.
+            //
+            // Rule 37: .id(args)  -> funcCall + dot with previous
+            // Rule 38: .id[i][j]  -> var + dot with previous
+
+            /*  36 */ {"IDNEST", "dot id @MAKE_ID IDNEST2"},
+            /*  37 */ {"IDNEST2", "lpar APARAMS rpar @MAKE_FUNCCALL @MAKE_DOT"},
+            /*  38 */ {"IDNEST2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR @MAKE_DOT"},
+
+            /*  39 */ {"INDICE", "lsqbr ARITHEXPR rsqbr"},  // ARITHEXPR pushes index subtree
+
+            // ===================== MEMBER DECLARATION (in class) ==========
+            // Rule 40: starts with id — could be funcDecl or varDecl (class-type)
+            // Rule 41/42: starts with float/integer — always varDecl
+            //
+            // Rule 44 detail: the id from rule 40 is actually the TYPE name.
+            //   @RETYPE_TOP_TO_TYPE changes it from "id" to "type" node.
+
+            /*  40 */ {"MEMBERDECL", "id @MAKE_ID MEMBERDECL2"},
+            /*  41 */ {"MEMBERDECL", "float @MAKE_TYPE id @MAKE_ID @PUSH_EPSILON REPTVARDECL2 @MAKE_DIMLIST semi @MAKE_VARDECL"},
+            /*  42 */ {"MEMBERDECL", "integer @MAKE_TYPE id @MAKE_ID @PUSH_EPSILON REPTVARDECL2 @MAKE_DIMLIST semi @MAKE_VARDECL"},
+            /*  43 */ {"MEMBERDECL2", "lpar FPARAMS rpar colon FUNCDECL2 @MAKE_FUNCDECL"},  // funcDecl: id was funcName
+            /*  44 */ {"MEMBERDECL2", "@RETYPE_TOP_TO_TYPE id @MAKE_ID @PUSH_EPSILON REPTVARDECL2 @MAKE_DIMLIST semi @MAKE_VARDECL"},  // varDecl: id was type
+
+            // ===================== MULTIPLICATIVE OPERATORS ===============
+
+            /*  45 */ {"MULTOP", "mult @MAKE_MULTOP"},
+            /*  46 */ {"MULTOP", "div @MAKE_MULTOP"},
+            /*  47 */ {"MULTOP", "and @MAKE_MULTOP"},
+
+            // ===================== OPTIONAL INHERITS (class) ==============
+            // Epsilon marker before first inherited id; REPTOPTCLASSDECL22 pushes more ids.
+
+            /*  48 */ {"OPTCLASSDECL2", "inherits @PUSH_EPSILON id @MAKE_ID REPTOPTCLASSDECL22 @MAKE_INHERITLIST"},
+            /*  49 */ {"OPTCLASSDECL2", "@PUSH_EPSILON @MAKE_INHERITLIST"},  // no inherits -> empty list
+
+            // ===================== OPTIONAL LOCAL VARS (func body) ========
+            // Epsilon marker before varDecl repetition.
+
+            /*  50 */ {"OPTFUNCBODY0", "local @PUSH_EPSILON REPTOPTFUNCBODY01 @MAKE_VARDECLLIST"},
+            /*  51 */ {"OPTFUNCBODY0", "@PUSH_EPSILON @MAKE_VARDECLLIST"},  // no local vars -> empty list
+
+            // ===================== PROGRAM ================================
+            // Top-level: classList + funcDefList + main funcBody
+            //   Each list uses epsilon marker + collector pattern.
+
+            /*  52 */ {"PROG", "@PUSH_EPSILON REPTPROG0 @MAKE_CLASSLIST @PUSH_EPSILON REPTPROG1 @MAKE_FUNCDEFLIST main FUNCBODY @MAKE_PROG"},
+
+            // ===================== RELATIONAL EXPRESSION ==================
+            // Used in if/while conditions. Always produces relExpr node.
+
+            /*  53 */ {"RELEXPR", "ARITHEXPR RELOP ARITHEXPR @MAKE_RELEXPR"},
+
+            // ===================== RELATIONAL OPERATORS ===================
+
+            /*  54 */ {"RELOP", "eq @MAKE_RELOP"},
+            /*  55 */ {"RELOP", "neq @MAKE_RELOP"},
+            /*  56 */ {"RELOP", "lt @MAKE_RELOP"},
+            /*  57 */ {"RELOP", "gt @MAKE_RELOP"},
+            /*  58 */ {"RELOP", "leq @MAKE_RELOP"},
+            /*  59 */ {"RELOP", "geq @MAKE_RELOP"},
+
+            // ===================== REPETITIONS (no actions needed) =========
+            // These just repeat their child rule. List collection is handled
+            // by the epsilon marker + collector in the parent rule.
+
             /*  60 */ {"REPTAPARAMS1", "APARAMSTAIL REPTAPARAMS1"},
             /*  61 */ {"REPTAPARAMS1", "EPSILON"},
-            /*  62 */ {"REPTCLASSDECL4", "VISIBILITY MEMBERDECL REPTCLASSDECL4"},
+
+            // Each iteration: VISIBILITY pushes vis leaf, MEMBERDECL pushes decl,
+            // @MAKE_MEMBERDECL combines them into one memberDecl node.
+            /*  62 */ {"REPTCLASSDECL4", "VISIBILITY MEMBERDECL @MAKE_MEMBERDECL REPTCLASSDECL4"},
             /*  63 */ {"REPTCLASSDECL4", "EPSILON"},
+
             /*  64 */ {"REPTFPARAMS2", "ARRAYSIZE REPTFPARAMS2"},
             /*  65 */ {"REPTFPARAMS2", "EPSILON"},
             /*  66 */ {"REPTFPARAMS3", "FPARAMSTAIL REPTFPARAMS3"},
@@ -79,9 +219,9 @@ public class ParsingTable {
             /*  69 */ {"REPTFPARAMSTAIL3", "EPSILON"},
             /*  70 */ {"REPTFUNCBODY2", "STATEMENT REPTFUNCBODY2"},
             /*  71 */ {"REPTFUNCBODY2", "EPSILON"},
-            /*  72 */ {"REPTIDNEST1", "INDICE REPTIDNEST1"},
+            /*  72 */ {"REPTIDNEST1", "INDICE REPTIDNEST1"},     // each INDICE pushes one arithExpr
             /*  73 */ {"REPTIDNEST1", "EPSILON"},
-            /*  74 */ {"REPTOPTCLASSDECL22", "comma id REPTOPTCLASSDECL22"},
+            /*  74 */ {"REPTOPTCLASSDECL22", "comma id @MAKE_ID REPTOPTCLASSDECL22"},
             /*  75 */ {"REPTOPTCLASSDECL22", "EPSILON"},
             /*  76 */ {"REPTOPTFUNCBODY01", "VARDECL REPTOPTFUNCBODY01"},
             /*  77 */ {"REPTOPTFUNCBODY01", "EPSILON"},
@@ -97,45 +237,136 @@ public class ParsingTable {
             /*  87 */ {"REPTVARIABLE", "EPSILON"},
             /*  88 */ {"REPTVARIABLEORFUNCTIONCALL", "IDNEST REPTVARIABLEORFUNCTIONCALL"},
             /*  89 */ {"REPTVARIABLEORFUNCTIONCALL", "EPSILON"},
+
+            // ===================== RIGHT-RECURSIVE ARITH/TERM ============
+            // Left-associativity via stack: after ADDOP+TERM (or MULTOP+FACTOR),
+            // @MAKE_ADDNODE/@MAKE_MULTNODE pops right, op, left -> creates node,
+            // pushes result as new left operand for next iteration.
+
             /*  90 */ {"RIGHTRECARITHEXPR", "EPSILON"},
-            /*  91 */ {"RIGHTRECARITHEXPR", "ADDOP TERM RIGHTRECARITHEXPR"},
+            /*  91 */ {"RIGHTRECARITHEXPR", "ADDOP TERM @MAKE_ADDNODE RIGHTRECARITHEXPR"},
             /*  92 */ {"RIGHTRECTERM", "EPSILON"},
-            /*  93 */ {"RIGHTRECTERM", "MULTOP FACTOR RIGHTRECTERM"},
-            /*  94 */ {"SIGN", "plus"},
-            /*  95 */ {"SIGN", "minus"},
+            /*  93 */ {"RIGHTRECTERM", "MULTOP FACTOR @MAKE_MULTNODE RIGHTRECTERM"},
+
+            // ===================== SIGN ==================================
+
+            /*  94 */ {"SIGN", "plus @MAKE_SIGN"},
+            /*  95 */ {"SIGN", "minus @MAKE_SIGN"},
+
+            // ===================== START =================================
+
             /*  96 */ {"START", "PROG"},
-            /*  97 */ {"STATBLOCK", "do REPTSTATBLOCK1 end"},
-            /*  98 */ {"STATBLOCK", "STATEMENT"},
-            /*  99 */ {"STATBLOCK", "EPSILON"},
-            /* 100 */ {"STATEMENT", "id STATEMENT2"},
-            /* 101 */ {"STATEMENT", "if lpar RELEXPR rpar then STATBLOCK else STATBLOCK semi"},
-            /* 102 */ {"STATEMENT", "while lpar RELEXPR rpar STATBLOCK semi"},
-            /* 103 */ {"STATEMENT", "read lpar VARIABLE rpar semi"},
-            /* 104 */ {"STATEMENT", "write lpar EXPR rpar semi"},
-            /* 105 */ {"STATEMENT", "return lpar EXPR rpar semi"},
-            /* 106 */ {"STATEMENT2", "REPTIDNEST1 STMTIDNEST"},
-            /* 107 */ {"STATEMENT2", "lpar APARAMS rpar STATEMENT3"},
-            /* 108 */ {"STATEMENT3", "dot id STMTIDNEST2"},
-            /* 109 */ {"STATEMENT3", "semi"},
+
+            // ===================== STATEMENT BLOCK =======================
+            // Epsilon marker + collector for statement lists.
+
+            /*  97 */ {"STATBLOCK", "do @PUSH_EPSILON REPTSTATBLOCK1 @MAKE_STATBLOCK end"},
+            /*  98 */ {"STATBLOCK", "@PUSH_EPSILON STATEMENT @MAKE_STATBLOCK"},    // single statement
+            /*  99 */ {"STATBLOCK", "@PUSH_EPSILON @MAKE_STATBLOCK"},              // empty block
+
+            // ===================== STATEMENTS ============================
+            //
+            // Rule 100-109 handle the tricky "id STATEMENT2" case where
+            // the first id could start an assignment OR a function call.
+            //
+            // ASSIGNMENT PATH (id -> indices -> dot chain -> assign):
+            //   Rule 100: push id
+            //   Rule 106: build var (id + indices), then STMTIDNEST
+            //   Rule 123: dot chain continuation -> STMTIDNEST2
+            //   Rule 126: build var, @MAKE_DOT with previous, continue
+            //   Rule 124: assign EXPR -> @MAKE_ASSIGNSTAT
+            //
+            // FUNCTION CALL PATH (id -> (args) -> maybe dot chain):
+            //   Rule 100: push id
+            //   Rule 107: (args) -> @MAKE_FUNCCALL, then STATEMENT3
+            //   Rule 108: dot continuation -> STMTIDNEST2
+            //   Rule 125: (args) -> @MAKE_FUNCCALL, @MAKE_DOT, then STMTIDNEST3
+            //   Rule 109/128: semi -> done (funcCall is the statement)
+            //
+            // Example trace for "a.b[1] = 5;":
+            //   100: push id:a
+            //   106: epsilon marker, no indices, @MAKE_INDICELIST, @MAKE_VAR -> var(a,[])
+            //   123: push id:b
+            //   126: epsilon marker, INDICE(1), @MAKE_INDICELIST, @MAKE_VAR -> var(b,[1])
+            //        @MAKE_DOT -> dot(var(a,[]), var(b,[1]))
+            //   124: push expr:5, @MAKE_ASSIGNSTAT -> assignStat(dot(...), 5)
+
+            /* 100 */ {"STATEMENT", "id @MAKE_ID STATEMENT2"},
+            /* 101 */ {"STATEMENT", "if lpar RELEXPR rpar then STATBLOCK else STATBLOCK semi @MAKE_IFSTAT"},
+            /* 102 */ {"STATEMENT", "while lpar RELEXPR rpar STATBLOCK semi @MAKE_WHILESTAT"},
+            /* 103 */ {"STATEMENT", "read lpar VARIABLE rpar semi @MAKE_READSTAT"},
+            /* 104 */ {"STATEMENT", "write lpar EXPR rpar semi @MAKE_WRITESTAT"},
+            /* 105 */ {"STATEMENT", "return lpar EXPR rpar semi @MAKE_RETURNSTAT"},
+
+            // STATEMENT2: variable path (indices then assign/dot) vs function call path
+            /* 106 */ {"STATEMENT2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR STMTIDNEST"},
+            /* 107 */ {"STATEMENT2", "lpar APARAMS rpar @MAKE_FUNCCALL STATEMENT3"},
+
+            // STATEMENT3: after id(args), continue dot chain or end with semi
+            /* 108 */ {"STATEMENT3", "dot id @MAKE_ID STMTIDNEST2"},
+            /* 109 */ {"STATEMENT3", "semi"},  // funcCall already on stack as the statement
+
+            // ===================== TERM ==================================
+            // Same left-assoc pattern as ARITHEXPR but for mult/div/and.
+
             /* 110 */ {"TERM", "FACTOR RIGHTRECTERM"},
-            /* 111 */ {"TYPE", "integer"},
-            /* 112 */ {"TYPE", "float"},
-            /* 113 */ {"TYPE", "id"},
-            /* 114 */ {"VARDECL", "TYPE id REPTVARDECL2 semi"},
-            /* 115 */ {"VARIABLE", "id VARIABLE2"},
-            /* 116 */ {"VARIABLE2", "REPTIDNEST1 REPTVARIABLE"},
-            /* 117 */ {"VARIABLE2", "lpar APARAMS rpar VARIDNEST"},
-            /* 118 */ {"VARIDNEST", "dot id VARIDNEST2"},
-            /* 119 */ {"VARIDNEST2", "lpar APARAMS rpar dot id VARIDNEST2"},
-            /* 120 */ {"VARIDNEST2", "REPTIDNEST1"},
-            /* 121 */ {"VISIBILITY", "public"},
-            /* 122 */ {"VISIBILITY", "private"},
-            /* 123 */ {"STMTIDNEST", "dot id STMTIDNEST2"},
-            /* 124 */ {"STMTIDNEST", "assign EXPR semi"},
-            /* 125 */ {"STMTIDNEST2", "lpar APARAMS rpar STMTIDNEST3"},
-            /* 126 */ {"STMTIDNEST2", "REPTIDNEST1 STMTIDNEST"},
-            /* 127 */ {"STMTIDNEST3", "dot id STMTIDNEST2"},
-            /* 128 */ {"STMTIDNEST3", "semi"},
+
+            // ===================== TYPE ==================================
+
+            /* 111 */ {"TYPE", "integer @MAKE_TYPE"},
+            /* 112 */ {"TYPE", "float @MAKE_TYPE"},
+            /* 113 */ {"TYPE", "id @MAKE_TYPE"},
+
+            // ===================== VARIABLE DECLARATION ==================
+            // TYPE pushes type leaf, id @MAKE_ID pushes id leaf,
+            // epsilon marker + REPTVARDECL2 + @MAKE_DIMLIST collects dimensions,
+            // @MAKE_VARDECL pops 3: type, id, dimList.
+
+            /* 114 */ {"VARDECL", "TYPE id @MAKE_ID @PUSH_EPSILON REPTVARDECL2 @MAKE_DIMLIST semi @MAKE_VARDECL"},
+
+            // ===================== VARIABLE (for read/assign LHS) =========
+            // Rule 115 pushes the first id. VARIABLE2 builds var + dot chain.
+            //
+            // Rule 116: variable path - build var, then REPTVARIABLE for dots
+            // Rule 117: function call path - id(args), then VARIDNEST for .field
+            //
+            // VARIDNEST (rules 118-120) handles dot chain continuation:
+            //   Rule 118: .id -> push id, VARIDNEST2 decides indices vs funcCall
+            //   Rule 119: .id(args) -> funcCall, @MAKE_DOT, continue chain
+            //   Rule 120: .id[i] -> var, @MAKE_DOT
+
+            /* 115 */ {"VARIABLE", "id @MAKE_ID VARIABLE2"},
+            /* 116 */ {"VARIABLE2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR REPTVARIABLE"},
+            /* 117 */ {"VARIABLE2", "lpar APARAMS rpar @MAKE_FUNCCALL VARIDNEST"},
+            /* 118 */ {"VARIDNEST", "dot id @MAKE_ID VARIDNEST2"},
+            /* 119 */ {"VARIDNEST2", "lpar APARAMS rpar @MAKE_FUNCCALL @MAKE_DOT dot id @MAKE_ID VARIDNEST2"},
+            /* 120 */ {"VARIDNEST2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR @MAKE_DOT"},
+
+            // ===================== VISIBILITY ============================
+
+            /* 121 */ {"VISIBILITY", "public @MAKE_VISIBILITY"},
+            /* 122 */ {"VISIBILITY", "private @MAKE_VISIBILITY"},
+
+            // ===================== STATEMENT ID-NEST (dot/assign chain) ===
+            // Continuation of STATEMENT2 rule 106 (variable path).
+            //
+            // Rule 123: dot continuation - push new id, enter STMTIDNEST2
+            // Rule 124: assignment - push expr, @MAKE_ASSIGNSTAT
+            //
+            // STMTIDNEST2 (rules 125-126): after dot+id in statement context
+            //   Rule 125: id(args) -> funcCall, @MAKE_DOT, continue via STMTIDNEST3
+            //   Rule 126: id[indices] -> var, @MAKE_DOT, continue via STMTIDNEST
+            //
+            // STMTIDNEST3 (rules 127-128): after funcCall in dot chain
+            //   Rule 127: another dot - continue chain
+            //   Rule 128: semi - done (funcCall chain is the statement)
+
+            /* 123 */ {"STMTIDNEST", "dot id @MAKE_ID STMTIDNEST2"},
+            /* 124 */ {"STMTIDNEST", "assign EXPR semi @MAKE_ASSIGNSTAT"},
+            /* 125 */ {"STMTIDNEST2", "lpar APARAMS rpar @MAKE_FUNCCALL @MAKE_DOT STMTIDNEST3"},
+            /* 126 */ {"STMTIDNEST2", "@PUSH_EPSILON REPTIDNEST1 @MAKE_INDICELIST @MAKE_VAR @MAKE_DOT STMTIDNEST"},
+            /* 127 */ {"STMTIDNEST3", "dot id @MAKE_ID STMTIDNEST2"},
+            /* 128 */ {"STMTIDNEST3", "semi"},  // end of func call chain statement
     };
 
     // Parsing table: TT[nonTerminal][terminal] = rule index

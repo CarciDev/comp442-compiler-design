@@ -1,0 +1,11 @@
+// A3 TEST: Variable declarations only
+// Tests: VarDecl -> Type, Id, DimList (empty and with dimensions)
+// Expected AST nodes: Prog, ClassList, FuncDefList, ProgramBlock, VarDecl, Type, Id, DimList, Num
+main
+  local
+    integer x;
+    float y;
+    integer arr[5];
+    float matrix[3][4];
+  do
+  end

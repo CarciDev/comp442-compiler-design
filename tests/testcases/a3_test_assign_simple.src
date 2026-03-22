@@ -1,0 +1,11 @@
+// A3 TEST: Simple assignments with literals
+// Tests: AssignStat -> Id, Num
+// Inspired by example2: a=1; b=2;
+main
+  local
+    integer a;
+    integer b;
+  do
+    a = 1;
+    b = 2;
+  end
