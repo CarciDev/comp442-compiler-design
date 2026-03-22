@@ -272,10 +272,7 @@ public class ASTIntegrationTest {
 
     // Helpers
 
-    /**
-     * Parse a .src file and return the AST root.
-     * ADAPT THIS to match your Parser/ASTDriver API.
-     */
+    /** Parse a .src file and return the AST root. */
     static ASTNode parseFile(String filename) {
         String path = TEST_DIR + filename;
         try {
