@@ -1,0 +1,37 @@
+// Tests inheritance, shadowing, and overriding
+// Expected: 0 errors, 2 warnings
+
+class Animal {
+	public integer legs;
+	public speak() : void;
+};
+
+class Dog inherits Animal {
+	public integer legs;              // 8.5 - shadowed inherited data member 'legs'
+	public speak() : void;           // 9.3 - overridden member function 'speak'
+	public fetch() : void;
+};
+
+Animal::speak() : void
+  do
+    write(0);
+  end;
+
+Dog::speak() : void
+  do
+    write(1);
+  end;
+
+Dog::fetch() : void
+  do
+    write(2);
+  end;
+
+main
+  local
+    Dog d;
+  do
+    d.legs = 4;
+    d.speak();
+    d.fetch();
+  end

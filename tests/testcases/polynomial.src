@@ -54,10 +54,19 @@ LINEAR::build(float A, float B) : LINEAR
     return (new_function);
   end;
 
+
 QUADRATIC::build(float A, float B, float C) : QUADRATIC
   local
     QUADRATIC new_function;
+  integer numbers[10];
+  integer matrix[3][5];
+  integer i;
   do
+
+    // deeply nested parentheses
+    c = ((((a + b) * 2) - 3) + 1);
+    write(c);
+
     new_function.a = A;
     new_function.b = B;
     new_function.c = C;
@@ -82,3 +91,4 @@ main
         write(f2.evaluate(counter));
       end;
   end
+

@@ -1,0 +1,78 @@
+// Tests various semantic error cases
+// Expected: 11 errors, 7 warnings
+
+class Foo {
+	public integer x;
+	public getX() : integer;
+};
+
+class Foo {                           // 8.1 - multiply declared class 'Foo'
+	public float y;
+};
+
+class Bar inherits Foo {
+	public integer x;                // 8.5 - shadowed inherited data member 'x'
+	public getX() : integer;         // 9.3 - overridden member function 'getX'
+};
+
+class A inherits B {                  // 14.1 - circular class dependency involving 'A'
+	public integer val;
+};
+
+class B inherits A {
+	public integer val;               // 8.5 - shadowed inherited data member 'val'
+};
+
+Foo::getX() : integer
+  local
+    integer x;                        // 8.6 - local variable 'x' shadows data member of its class
+  do
+    x = 0;
+    return (x);
+  end;
+
+Bar::getX() : integer
+  local
+    integer result;
+  do
+    result = x;
+    return (result);
+  end;
+
+g(integer a) : void
+  do
+    write(a);
+  end;
+
+g(integer a) : void                   // 8.2 - multiply declared free function 'g'
+  do
+    write(a);
+  end;
+
+g(float a) : void                     // 9.1 - overloaded free function 'g' (x2)
+  do
+    write(a);
+  end;
+
+main
+  local
+    Foo f;
+    Bar b;
+    integer i;
+    integer i;                        // 8.4 - multiply declared variable 'i'
+    float z;
+    Unknown u;                        // 11.5 - undeclared class 'Unknown'
+  do
+    i = 1;
+    z = 1.0;
+    f.x = 1;
+    b.x = 2;
+    b.notAMember = 3;                 // 11.2 - undeclared member variable 'notAMember'
+    f.notAFunc();                     // 11.3 - undeclared member function 'notAFunc'
+    noFunc();                         // 11.4 - undeclared free function 'noFunc'
+    i.x = 1;                         // 15.1 - "." operator used on non-class type
+    g(1, 2, 3);                      // 12.1 - function call with wrong number of parameters
+    g(1.0);                          // 12.2 - function call with wrong type of parameters
+    i = z;                           // 10.2 - type error in assignment statement
+
+ end

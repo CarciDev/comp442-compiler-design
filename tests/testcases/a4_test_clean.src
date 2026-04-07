@@ -1,0 +1,30 @@
+// Clean program with no semantic errors
+// Tests basic symbol table construction
+// Expected: 0 errors, 0 warnings
+
+class Shape {
+	public area() : float;
+	public name() : integer;
+};
+
+Shape::area() : float
+  do
+    return (0.0);
+  end;
+
+Shape::name() : integer
+  do
+    return (0);
+  end;
+
+main
+  local
+    float x;
+    integer y;
+    Shape s;
+  do
+    x = 1.0;
+    y = 1;
+    write(x);
+    write(y);
+  end

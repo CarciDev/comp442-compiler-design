@@ -47,15 +47,14 @@ public class ASTDriver {
 
         File srcFile = new File(filename);
         File parentDir = srcFile.getParentFile();
-        File outputDir = (parentDir != null) ? new File(parentDir, "output") : new File("output");
-
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-
         String baseName = srcFile.getName();
         if (baseName.endsWith(".src")) {
             baseName = baseName.substring(0, baseName.length() - 4);
+        }
+        File outputDir = (parentDir != null) ? new File(parentDir, "output/" + baseName) : new File("output/" + baseName);
+
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
         }
 
         // A1 output files
