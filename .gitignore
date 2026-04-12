@@ -31,3 +31,4 @@ replay_pid*
 
 # Generated test output
 **/output/
+.gitnexus

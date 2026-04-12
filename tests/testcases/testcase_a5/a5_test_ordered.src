@@ -1,0 +1,207 @@
+/*
+Ordered comprehensive test: each rubric item is tested in sequence (1.1 through 5.3).
+Each write() outputs the expected value so you can verify correctness.
+
+Expected output (one number per line):
+  10        1.1  basic int allocation
+  20        1.2  array of basic type
+  8         1.3  object allocation (3+5 stored in nested member)
+  99        1.4  array of objects
+  30        2.1  branch to function + 2.2 pass params
+  42        2.3  return value from function
+  15        2.4  member function using object data (7+8)
+  100       3.1  assignment
+  1         3.2  if-then branch taken (100 > 50)
+  3         3.3  while loop counted 3 iterations
+  7         5.1  complex expression: (1+2)*3-2
+  40        4.1  array element access: nums[2]
+  77        4.2  array of objects member: ps[1].x
+  8         4.3  object member access: p1.y
+  15        4.4  nested object member: p1.sub.val (7+8)
+  85        5.1  full expression: 10*2 + nums[1]*2 + 5
+  30        5.2  array[expr] index: nums[1+0]
+  15        5.3  object members in expression: p1.x + p1.y
+*/
+
+// Assignment 5 coverage:
+//      -------------
+//      | YES | NO  |
+//      -------------
+// 1.1: |  X  |     |
+// 1.2: |  X  |     |
+// 1.3: |  X  |     |
+// 1.4: |  X  |     |
+// 2.1: |  X  |     |
+// 2.2: |  X  |     |
+// 2.3: |  X  |     |
+// 2.4: |  X  |     |
+// 3.1: |  X  |     |
+// 3.2: |  X  |     |
+// 3.3: |  X  |     |
+// 3.4: |  X  |     |
+// 4.1: |  X  |     |
+// 4.2: |  X  |     |
+// 4.3: |  X  |     |
+// 4.4: |  X  |     |
+// 5.1: |  X  |     |
+// 5.2: |  X  |     |
+// 5.3: |  X  |     |
+//      -------------
+
+// ====== Class declarations ======
+
+class Inner {
+  public integer val;
+};
+
+class Pair {
+  public integer x;
+  public integer y;
+  public integer arr[5];
+  public Inner  sub;
+  public setup(integer a, integer b) : Pair;
+  public sum() : integer;
+};
+
+// ====== Member function definitions ======
+
+Pair::setup(integer a, integer b) : Pair
+  local
+    Pair p;
+  do
+    p.x = a;
+    p.y = b;
+    p.sub.val = a + b;
+    return (p);
+  end;
+
+Pair::sum() : integer
+  local
+    integer result;
+  do
+    result = x + y;
+    return (result);
+  end;
+
+// ====== Free function ======
+
+add(integer a, integer b) : integer
+  local
+    integer result;
+  do
+    result = a + b;
+    return (result);
+  end;
+
+// ====== Main ======
+
+main
+  local
+    integer a;
+    integer c;
+    float   f;
+    integer nums[4];
+    Pair    p1;
+    Pair    ps[3];
+    integer i;
+    integer t;
+  do
+
+    // ---- 1.1: Allocate memory for basic types (integer, float) ----
+    a = 10;
+    write(a);                                                       // expect: 10
+
+    // ---- 1.2: Allocate memory for arrays of basic types ----
+    nums[0] = 20;
+    nums[1] = 30;
+    nums[2] = 40;
+    nums[3] = 50;
+    write(nums[1+2]);                                                 // expect: 50
+
+    // ---- 1.3: Allocate memory for objects ----
+    p1 = p1.setup(3, 5);
+    p1.arr[3] = 20;
+    write(p1.arr[3]);                                              // expect: 20
+
+    // ---- 1.4: Allocate memory for arrays of objects ----
+    ps[0].arr[2] = 99;
+
+    write(ps[0].arr[2]);                                                 // expect: 99
+
+    // ---- 2.1: Branch to function, execute, branch back ----
+    // ---- 2.2: Pass parameters to the function ----
+    c = add(5+5, 20);
+    write(c);                                                       // expect: 30
+
+    // ---- 2.3: Return value from function ----
+    c = add(40, 2);
+    write(c);                                                       // expect: 42
+
+    // ---- 2.4: Member function using object's data members ----
+    p1 = p1.setup(7, 8);
+    c = p1.sum();
+    write(c);                                                       // expect: 15
+
+    // ---- 3.1: Assignment statement ----
+    t = 100;
+    write(t);                                                       // expect: 100
+
+    // ---- 3.2: Conditional statement (if-then-else) ----
+    if (t > 50)
+    then
+      do
+        write(1);                                                   // expect: 1
+      end
+    else
+      do
+        write(0);
+      end;
+
+    // ---- 3.3: Loop statement (while) ----
+    i = 0;
+    t = 0;
+    while (i < 3)
+      do
+        t = t + 1;
+        i = i + 1;
+      end;
+    write(t);                                                       // expect: 3
+
+    // ---- 3.4: I/O statements ----
+    // All write() calls above already demonstrate 3.4
+
+    // ---- 5.1: Complex arithmetic expression ----
+    c = (1 + 2) * 3 - 2;
+    write(c);                                                       // expect: 7
+
+    // ---- 4.1: Array element access (basic type) ----
+    c = nums[2];
+    write(c);                                                       // expect: 40
+
+    // ---- 4.2: Array of objects: access element's member ----
+    ps[1] = ps[1].setup(77, 33);
+    c = ps[1].x;
+    write(c);                                                       // expect: 77
+
+    // ---- 4.3: Object member access (basic type) ----
+    c = p1.y;
+    write(c);                                                       // expect: 8
+
+    // ---- 4.4: Nested object member (object inside object) ----
+    c = p1.sub.val;
+    write(c);                                                       // expect: 15
+
+    // ---- 5.1: Another complex expression ----
+    c = 10 * 2 + nums[1] * 2 + 5;
+    write(c);                                                       // expect: 85
+
+    // ---- 5.2: Array index is itself an expression ----
+    i = 1;
+    c = nums[i + 0];
+    write(c);                                                       // expect: 30
+
+    // ---- 5.3: Expression involving object member access ----
+    c = p1.x + p1.y;
+    write(c);                                                       // expect: 15
+
+  end

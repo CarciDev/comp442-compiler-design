@@ -1,0 +1,91 @@
+/*
+1.1  Allocate memory for basic types (integer, float).
+1.2  Allocate memory for arrays of basic types.
+2.1  Branch to a function's code block, execute, branch back.
+2.2  Pass parameters as local values to the function's code block.
+2.3  Upon execution of a return statement, pass the return value back.
+3.1  Assignment statement.
+3.4  Input/output statement.
+4.1  For arrays of basic types, access to an array's elements.
+5.1  Computing the value of an entire complex expression.
+5.2  Expression involving an array factor whose indexes are themselves expressions.
+*/
+
+// Assignment 5 coverage:
+//      -------------
+//      | YES | NO  |
+//      -------------
+// 1.1: |  X  |     |
+// 1.2: |  X  |     |
+// 1.3: |     |  X  |
+// 1.4: |     |  X  |
+// 2.1: |  X  |     |
+// 2.2: |  X  |     |
+// 2.3: |  X  |     |
+// 2.4: |     |  X  |
+// 3.1: |  X  |     |
+// 3.2: |     |  X  |
+// 3.3: |  X  |     |
+// 3.4: |  X  |     |
+// 4.1: |  X  |     |
+// 4.2: |     |  X  |
+// 4.3: |     |  X  |
+// 4.4: |     |  X  |
+// 5.1: |  X  |     |
+// 5.2: |  X  |     |
+// 5.3: |     |  X  |
+//      -------------
+
+/* add two numbers */
+addTwo(integer a, integer b) : integer                 // 2.1, 2.2
+  local
+    integer result;                                    // 1.1
+  do
+    result = a + b;                                   // 3.1, 5.1
+    return (result);                                   // 2.3
+  end;
+
+/* multiply two numbers */
+multiply(integer x, integer y) : integer               // 2.1, 2.2
+  local
+    integer prod;                                      // 1.1
+  do
+    prod = x * y;                                     // 3.1, 5.1
+    return (prod);                                     // 2.3
+  end;
+
+main
+  local
+    integer a;                                         // 1.1
+    integer b;                                         // 1.1
+    integer c;                                         // 1.1
+    integer arr[5];                                    // 1.2
+    integer i;                                         // 1.1
+    integer sum;                                       // 1.1
+  do
+    a = 10;                                           // 3.1
+    b = 20;                                           // 3.1
+    c = addTwo(a, b);                                  // 2.1, 2.2, 2.3
+    write(c);                                          // 3.4
+
+    c = multiply(a, b);                                // 2.1, 2.2, 2.3
+    write(c);                                          // 3.4
+
+    // Fill array
+    i = 0;                                            // 3.1
+    while (i < 5)                                      // 3.3, 5.1
+      do
+        arr[i] = i * 10;                              // 3.1, 4.1, 5.1, 5.2
+        i = i + 1;                                    // 3.1, 5.1
+      end;
+
+    // Sum array elements
+    sum = 0;                                          // 3.1
+    i = 0;                                            // 3.1
+    while (i < 5)                                      // 3.3, 5.1
+      do
+        sum = sum + arr[i];                           // 3.1, 4.1, 5.1, 5.2
+        i = i + 1;                                    // 3.1, 5.1
+      end;
+    write(sum);                                        // 3.4
+  end
