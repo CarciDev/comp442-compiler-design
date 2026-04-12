@@ -271,8 +271,8 @@ public class SemanticChecker implements Visitor {
             String pt = declTypes.get(i);
             if (at != null && pt != null) {
                 String ab = getBaseType(at), pb = getBaseType(pt);
-                // 12.2: base types must match
-                if (!ab.equalsIgnoreCase(pb))
+                // 12.2: base types must match (allow int->float coercion)
+                if (!ab.equalsIgnoreCase(pb) && !(ab.equals("int") && pb.equals("float")))
                     addError(node.getLineNumber(), "12.2", "error", "Function call with wrong type of parameters");
                 // 13.3: if it's an array param, dimensions must match
                 else if (countDims(pt) > 0 && countDims(at) != countDims(pt))

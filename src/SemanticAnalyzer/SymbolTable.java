@@ -7,10 +7,12 @@ public class SymbolTable {
     private final List<SymbolTableEntry> entries = new ArrayList<>();
     private final SymbolTable parent;
     private final List<SymbolTable> inheritedTables = new ArrayList<>();
+    private int scopeSize;  // total size of this scope in bytes (computed by ComputeMemSizeVisitor)
 
     public SymbolTable(String name, SymbolTable parent) {
         this.name = name;
         this.parent = parent;
+        this.scopeSize = 0;
     }
 
     public void addEntry(SymbolTableEntry e) { entries.add(e); }
@@ -59,4 +61,6 @@ public class SymbolTable {
     public SymbolTable getParent() { return parent; }
     public List<SymbolTableEntry> getEntries() { return entries; }
     public List<SymbolTable> getInheritedTables() { return inheritedTables; }
+    public int getScopeSize() { return scopeSize; }
+    public void setScopeSize(int scopeSize) { this.scopeSize = scopeSize; }
 }

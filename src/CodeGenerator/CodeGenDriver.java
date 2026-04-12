@@ -1,18 +1,31 @@
-package src.SemanticAnalyzer;
+package src.CodeGenerator;
 
 import src.LexicalAnalyzer.LexicalAnalyzer;
 import src.SyntacticalAnalyzer.*;
+import src.SemanticAnalyzer.*;
 import java.io.*;
 import java.util.*;
 
-public class SemanticDriver {
+/**
+ * Driver that processes .src files through all compiler phases
+ * (lexing, parsing, semantic analysis, code generation) and
+ * outputs a .moon file for each input.
+ */
+public class CodeGenDriver {
 
     public static void main(String[] args) {
         if (args.length == 0) {
             processAllSrcFiles("tests/testcases");
             return;
         }
-        for (String f : args) processFile(f);
+        for (String f : args) {
+            File file = new File(f);
+            if (file.isDirectory()) {
+                processAllSrcFiles(f);
+            } else {
+                processFile(f);
+            }
+        }
     }
 
     public static void processAllSrcFiles(String directory) {
@@ -34,13 +47,13 @@ public class SemanticDriver {
         File outputDir = (parentDir != null) ? new File(parentDir, "output/" + baseName) : new File("output/" + baseName);
         if (!outputDir.exists()) outputDir.mkdirs();
 
-        // A1-A3 outputs
+        // Run previous phases (A1-A3)
         ASTDriver.processFile(filename);
 
         // Parse for semantic analysis
         ASTNode astRoot = parseFile(filename);
         if (astRoot == null) {
-            System.out.println("  Semantic analysis skipped (no AST)");
+            System.out.println("  Code generation skipped (no AST)");
             return;
         }
 
@@ -53,21 +66,21 @@ public class SemanticDriver {
         SemanticChecker checker = new SemanticChecker(globalTable, builder.getFuncTableMap());
         astRoot.accept(checker);
 
-        // Collect and sort errors by line number
+        // Collect errors
         List<String[]> allErrors = new ArrayList<>();
         allErrors.addAll(builder.getErrors());
         allErrors.addAll(checker.getErrors());
         allErrors.sort(Comparator.comparingInt(a -> Integer.parseInt(a[0])));
 
-        // Write .outsymboltables
+        // Write symbol tables
         String stFile = new File(outputDir, baseName + ".outsymboltables").getPath();
         try (PrintWriter w = new PrintWriter(new FileWriter(stFile))) {
-            w.print(printSymbolTable(globalTable));
+            w.print(SemanticDriver.printSymbolTable(globalTable));
         } catch (IOException e) {
             System.err.println("Error writing symbol tables: " + e.getMessage());
         }
 
-        // Write .outsemanticerrors
+        // Write semantic errors
         String seFile = new File(outputDir, baseName + ".outsemanticerrors").getPath();
         try (PrintWriter w = new PrintWriter(new FileWriter(seFile))) {
             if (allErrors.isEmpty()) {
@@ -80,10 +93,36 @@ public class SemanticDriver {
             System.err.println("Error writing semantic errors: " + e.getMessage());
         }
 
+        // Check for hard errors (skip code gen if present)
+        boolean hasErrors = false;
+        for (String[] err : allErrors) {
+            if ("error".equals(err[2])) { hasErrors = true; break; }
+        }
+
+        // Pass 3: Compute memory sizes and offsets (pre-computation phase)
+        ComputeMemSizeVisitor memSizer = new ComputeMemSizeVisitor(globalTable);
+        astRoot.accept(memSizer);
+
+        // Pass 4: Code generation
+        CodeGenerator codeGen = new CodeGenerator(globalTable, builder.getFuncTableMap());
+        astRoot.accept(codeGen);
+        String moonCode = codeGen.getMoonCode();
+
+        // Write .moon file
+        String moonFile = new File(outputDir, baseName + ".moon").getPath();
+        try (PrintWriter w = new PrintWriter(new FileWriter(moonFile))) {
+            w.print(moonCode);
+        } catch (IOException e) {
+            System.err.println("Error writing moon file: " + e.getMessage());
+        }
+
         System.out.println("  Generated: " + stFile);
         System.out.println("  Generated: " + seFile);
+        System.out.println("  Generated: " + moonFile);
         if (!allErrors.isEmpty())
             System.out.println("  Semantic errors/warnings: " + allErrors.size());
+        if (hasErrors)
+            System.out.println("  WARNING: Semantic errors present — generated code may not execute correctly");
     }
 
     private static ASTNode parseFile(String filename) {
@@ -97,48 +136,5 @@ public class SemanticDriver {
             System.err.println("Error parsing file: " + e.getMessage());
             return null;
         }
-    }
-
-    // ==================== Symbol Table Printer ====================
-
-    public static String printSymbolTable(SymbolTable table) {
-        StringBuilder sb = new StringBuilder();
-        printTable(table, 0, sb);
-        sb.append("\n");
-        return sb.toString();
-    }
-
-    private static final int[] BW = {83, 75, 66};
-    private static final String[] PRE = {"", "|    ", "|    |     "};
-    private static final String[] SUF = {"", "  |", "  |  |"};
-
-    private static void printTable(SymbolTable table, int level, StringBuilder sb) {
-        if (level >= BW.length) return;
-        String pre = PRE[level], suf = SUF[level];
-        int bw = BW[level], cw = bw - 4;
-
-        sb.append(pre).append("=".repeat(bw)).append(suf).append("\n");
-        sb.append(pre).append("| ").append(pad("table: " + table.getName(), cw)).append(" |").append(suf).append("\n");
-        sb.append(pre).append("=".repeat(bw)).append(suf).append("\n");
-
-        for (SymbolTableEntry e : table.getEntries()) {
-            sb.append(pre).append(fmtEntry(e, bw)).append(suf).append("\n");
-            if (e.getLink() != null)
-                printTable(e.getLink(), level + 1, sb);
-        }
-        sb.append(pre).append("=".repeat(bw)).append(suf).append("\n");
-    }
-
-    private static String fmtEntry(SymbolTableEntry e, int bw) {
-        String kind = e.getKind(), name = e.getName(), type = e.getType(), vis = e.getVisibility();
-        if ("class".equals(kind) || "inherit".equals(kind))
-            return String.format("| %-10s | %-" + (bw - 17) + "s |", kind, name);
-        if (vis != null)
-            return String.format("| %-10s | %-12s | %-" + (bw - 45) + "s | %-10s |", kind, name, type, vis);
-        return String.format("| %-10s | %-12s | %-" + (bw - 32) + "s |", kind, name, type);
-    }
-
-    private static String pad(String s, int w) {
-        return s.length() >= w ? s.substring(0, w) : s + " ".repeat(w - s.length());
     }
 }
